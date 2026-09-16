@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cite de culture - Activity</title>
+    <link rel="stylesheet" href="src/output.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supbase.js" defer></script>
+    <script src="script.js" defer></script>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- ================= AUTHENTIFICATION OBLIGATOIRE ================= -->
+    <div id="authModal"
+         class="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 sm:p-8">
+
+            <div class="text-center mb-7">
+                <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-sky-100">
+                    <i class="bi bi-person-circle text-3xl text-sky-600"></i>
+                </div>
+                <h2 id="authTitle" class="text-2xl font-black text-slate-800">
+                    Créer votre compte
+                </h2>
+                <p id="authDescription" class="mt-2 text-sm text-slate-500">
+                    Créez votre compte pour accéder à CiteActive.
+                </p>
+            </div>
+
+            <!-- INSCRIPTION -->
+            <form id="registerForm">
+                <div class="mb-4">
+                    <label for="registerName" class="block text-sm font-semibold mb-2">
+                        Nom complet
+                    </label>
+                    <input id="registerName" type="text" required
+                           autocomplete="name"
+                           placeholder="Ex : Jean Dupont"
+                           class="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+
+                <div class="mb-4">
+                    <label for="registerPhone" class="block text-sm font-semibold mb-2">
+                        Téléphone
+                    </label>
+                    <input id="registerPhone" type="tel" required
+                           autocomplete="tel"
+                           placeholder="Ex : 034 12 345 67"
+                           class="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+
+                <div class="mb-4">
+                    <label for="registerEmail" class="block text-sm font-semibold mb-2">
+                        Email
+                    </label>
+                    <input id="registerEmail" type="email" required
+                           autocomplete="email"
+                           placeholder="Ex : jean@gmail.com"
+                           class="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+
+                <div class="mb-6">
+                    <label for="registerPassword" class="block text-sm font-semibold mb-2">
+                        Mot de passe
+                    </label>
+                    <input id="registerPassword" type="password" required minlength="6"
+                           autocomplete="new-password"
+                           placeholder="Au moins 6 caractères"
+                           class="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-sky-600 hover:bg-sky-700 text-white py-3.5 rounded-xl font-bold transition">
+                    Créer mon compte
+                </button>
+            </form>
+
+            <!-- CONNEXION -->
+            <form id="loginForm" class="hidden">
+                <div class="mb-4">
+                    <label for="loginEmail" class="block text-sm font-semibold mb-2">
+                        Email
+                    </label>
+                    <input id="loginEmail" type="email" required
+                           autocomplete="email"
+                           placeholder="Ex : jean@gmail.com"
+                           class="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+
+                <div class="mb-6">
+                    <label for="loginPassword" class="block text-sm font-semibold mb-2">
+                        Mot de passe
+                    </label>
+                    <input id="loginPassword" type="password" required
+                           autocomplete="current-password"
+                           placeholder="Votre mot de passe"
+                           class="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-sky-600 hover:bg-sky-700 text-white py-3.5 rounded-xl font-bold transition">
+                    Se connecter
+                </button>
+            </form>
+
+            <button id="switchAuth" type="button"
+                    class="w-full mt-5 text-sm text-sky-600 hover:underline">
+                J'ai déjà un compte
+            </button>
+
+            <button id="forgotPasswordButton" type="button"
+                    class="w-full mt-3 text-sm text-slate-500 hover:text-sky-600 hidden">
+                Mot de passe oublié ?
+            </button>
+        </div>
+    </div>
+
+    <!-- =========NAVBAR=================== -->
+     <header class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <a href="#" class="flex items-center">
+                    <img  src="src/Images/cite-logo.png"   alt="Logo" class="h-18 w-auto object-contain" >
+                </a>
+                <nav class="hidden md:flex items-center gap-7 text-sm font-medium">
+                    <a href="#accueil" class="hover:text-[#A71D78] transition">Accueil</a>
+                    <a href="#activites" class="hover:text-[#A71D78] transition">Activités</a>
+                    <a href="#membres" class="hover:text-[#A71D78] transition">Membres</a>
+                    <a href="#espaces" class="hover:text-[#A71D78]   transition">Espaces</a>
+                    <a href="#contact" class="hover:text-[#A71D78] transition">Contact</a>
+                </nav>
+                <div class="flex items-center gap-3">
+                    <button onclick="openReservation()" class="hidden sm:flex bg-[#A71D78] hover:bg-[#8F1967] text-white px-5 py-2.5 rounded-xl font-semibold transition cursor-pointer">Réserver</button>
+                    <button onclick="openActivities()" class="hidden sm:flex bg-[#005383] hover:bg-[#005383]/50 text-white px-5 py-2.5 rounded-xl font-semibold transition cursor-pointer">Vos activités</button>
+                    <button id="menuButton" class="md:hidden p-2 rounded-lg hover:bg-slate-100">
+                        <i class="bi bi-list"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- =======MENU MOBILE========== -->
+             <div id="mobileMenu" class="hidden md:hidden pb-4">
+                <div class="flex flex-col gap-2">
+                    <a href="#accueil" class="p-3 rounded-lg hover:bg-slate-100">
+                    Accueil
+                    </a>
+
+                    <a href="#activites" class="p-3 rounded-lg hover:bg-slate-100">
+                        Activités
+                    </a>
+
+                    <a href="#membres" class="p-3 rounded-lg hover:bg-slate-100">
+                        Membres
+                    </a>
+
+                    <a href="#espaces" class="p-3 rounded-lg hover:bg-slate-100">
+                        Espaces
+                    </a>
+
+                    <a href="#contact" class="p-3 rounded-lg hover:bg-slate-100">
+                        Contact
+                    </a>
+                </div>
+             </div>
+        </div>
+     </header>
+     <!-- =========HERO============ -->
+      <section id="accueil" class="hero-pattern pt-32 pb-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div class="text-white">
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight">
+                        Une espace pour
+                        <span class="text-sky-400">apprendre,</span>
+                        <span class="text-green-400">jouer</span>
+                        et
+                        <span text-orange-400>partager.</span>
+                    </h1>
+                    <p class="mt-6 text-lg text-slate-300 max-w-xl">
+                        Bienvenue chez CiteActive, un espace communautaire pensé pour les enfants, les jeunes, les adultes et les familles.
+                    </p>
+                    <div class="flex flex-wrap gap-4 mt-8">
+                        <a href="#membres" class="bg-[#A71D78] hover:bg-[#8F1967] px-6 py-3 rounded-xl font-bold transition">
+                            Découvrir les offres
+                        </a>
+                        <a href="#activites" class="border border-white/30 hover:bg-white/10 px-6 py-3 rounded-xl font-bold transition">
+                            Voir les activités
+                        </a>
+
+                    </div>
+                    <div class="grid grid-cols-3 gap-5 mt-12 max-w-lg">
+                        <div>
+                            <p class="text-3xl font-black">100+</p>
+                            <p class="text-sm text-slate-400">membres</p>
+                        </div>
+                        <div>
+                            <p class="text-3xl font-black">20+</p>
+                            <p class="text-sm text-slate-400">activités</p>
+                        </div>
+                        <div>
+                            <p class="text-3xl font-black ">6j/7</p>
+                            <p class="text-sm text-slate-400">convivialité</p>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- ====CARTE==== -->
+                 <div class="relative">
+                    <div class="bg-white rounded-3xl shadow-2xl p-6 max-w-md mx-auto">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <p class="text-sm text-slate-500">Aujourd'hui</p>
+                                <h3 class="text-xl font-bold">Programme</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-[#A71D78] rounded-xl flex items-center justify-center">
+                                <i class="bi bi-calendar3 text-white text-2xl"></i>
+                            </div>
+                            
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex gap-4 p-4 rounded-2xl bg-slate-50">
+                                <div class="font-bold text-sky-600">
+                                    11h
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Jeux de société</p>
+                                    <p class="text-sm text-slate-500">Espace commun</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 p-4 rounded-2xl bg-slate-50">
+                                <div class="font-bold text-green-600">12h</div>
+                                <div>
+                                    <p class="font-semibold">Coin lecture</p>
+                                    <p class="text-sm text-slate-500">Livre Kasaboky</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 p-4 rounded-2xl bg-slate-50">
+                                 <div class="font-bold text-orange-600">13h</div>
+                                 <div>
+                                    <p class="font-semibold">PS5</p>
+                                    <p class="text-sm text-slate-500">Salle numérique</p>
+                                 </div>
+                            </div>
+                        </div>
+                        <button onclick="openReservation()" class="w-full mt-6 bg-[#A71D78] hover:bg-[#8F1967] text-white py-3 rounded-xl font-bold cursor-pointer">
+                            Réserver une activité
+                        </button>
+                    </div>
+                 </div>
+            </div>
+        </div>
+      </section>
+<!-- ============ACTIVITES=================== -->
+ <section id="activites" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto">
+            <span class="text-sky-600 font-bold">
+                NOS ACTIVITÉS
+            </span>
+            <h2 class="text-3xl sm:text-4xl font-black mt-2">
+                Il y a toujours quelque chose à faire
+            </h2>
+            <p class="text-slate-500 mt-4">
+                Des activités adaptés aux enfants, adolescents, jeunes, adultes et parents.
+            </p>
+        </div>
+        <!-- =====FILTRES====== -->
+         <div class="flex flex-wrap justify-center gap-3 mt-10">
+            <button onclick="filterActivites('all',event)" class="filter-btn active px-5 py-2 rounded-full bg-[#005383] text-white">
+                Toutes
+            </button>
+            <button onclick="filterActivites('jeu',event)" class="filter-btn active px-5 py-2 rounded-full bg-slate-100 hover:bg-slate-200">
+                Jeux
+            </button>
+            <button onclick="filterActivites('lecture',event)" class="filter-btn active px-5 py-2 rounded-full bg-slate-100 hover:bg-slate-200">
+                Lecture
+            </button>
+            <button onclick="filterActivites('numerique',event)" class="filter-btn active px-5 py-2 rounded-full bg-slate-100 hover:bg-slate-200">
+                Numérique
+            </button>
+            <button onclick="filterActivites('creatif',event)" class="filter-btn active px-5 py-2 rounded-full bg-slate-100 hover:bg-slate-200">
+                créatif
+            </button>
+         </div>
+         <!-- ===========CARTES========== -->
+          <div id="activityGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+            <!-- =====Act 1======= -->
+             <div class="activity-card" data-category="jeu">
+                <div class="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-3xl p-6 text-white">
+                    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
+                        <i class="bi bi-controller fs-3"></i>
+                    </div>
+                    <span class="text-sm bg-white/20 px-3 py-1 rounded-full">
+                        Jeux
+                    </span>
+                    <h3 class="text-2xl font-bold mt-4">
+                        PS5
+                    </h3>
+                    <p class="text-white/80 mt-2">2 scéances de 30 minutes par mois</p>
+                    <button onclick="openReservation('PS5')" class="mt-6 bg-white text-indigo-600 px-5 py-2.5 rounded-xl font-bold">
+                        Réserver
+                    </button>
+                </div>
+             </div>
+              <!-- =====Act 2========= -->
+             <div class="activity-card" data-category="jeu">
+                <div class="bg-gradient-to-br from-orange-500 to-red-500 rounded-3xl p-6 text-white">
+                    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
+                        <i class="bi bi-dice-5 fs-3"></i>
+                    </div>
+                    <span class="text-sm bg-white/20 px-3 py-1 rounded-full">
+                        Jeux
+                    </span>
+                    <h3 class="text-2xl font-bold mt-4">
+                        Jeux de société
+                    </h3>
+                    <p class="text-white/80 mt-2">Echecs, domino, katro et bien plus.</p>
+                    <button onclick="openReservation('Jeux de société')" class="mt-6 bg-white text-red-600 px-5 py-2.5 rounded-xl font-bold">
+                        Réserver
+                    </button>
+                </div>
+             </div>
+             <!-- ===============Act 3================= -->
+             <div class="activity-card" data-category="lecture">
+                <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl p-6 text-white">
+                    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
+                        <i class="bi bi-book fs-3"></i>
+                    </div>
+                    <span class="text-sm bg-white/20 px-3 py-1 rounded-full">
+                        Lecture
+                    </span>
+                    <h3 class="text-2xl font-bold mt-4">
+                        Coin lecture
+                    </h3>
+                    <p class="text-white/80 mt-2">Découvrez nos livres et choisissez votre lecture.</p>
+                    <button onclick="openReservation('Coin lecture')" class="mt-6 bg-white text-green-600 px-5 py-2.5 rounded-xl font-bold">
+                        Réserver
+                    </button>
+                </div>
+             </div>
+             <!-- ========Act 4=============== -->
+             <div class="activity-card" data-category="creatif">
+                <div class="bg-gradient-to-br from-pink-500 to-rose-600 rounded-3xl p-6 text-white">
+                    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
+                        <i class="bi bi-palette fs-3"></i>
+                    </div>
+                    <span class="text-sm bg-white/20 px-3 py-1 rounded-full">
+                        Créatif
+                    </span>
+                    <h3 class="text-2xl font-bold mt-4">
+                        Coloriage
+                    </h3>
+                    <p class="text-white/80 mt-2">Une activité créative pour petits et grands.</p>
+                    <button onclick="openReservation('Coloriage')" class="mt-6 bg-white text-rose-600 px-5 py-2.5 rounded-xl font-bold">
+                        Réserver
+                    </button>
+                </div>
+             </div>
+             <!-- ========Act 5========== -->
+             <div class="activity-card" data-category="numerique">
+                <div class="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-3xl p-6 text-white">
+                    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
+                        <i class="bi bi-display text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white/20 px-3 py-1 rounded-full">
+                        Numérique
+                    </span>
+                    <h3 class="text-2xl font-bold mt-4">
+                        Espace numérique
+                    </h3>
+                    <p class="text-white/80 mt-2">Coworking Visio, réunion et impréssion.</p>
+                    <button onclick="openReservation('Espace numérique')" class="mt-6 bg-white text-blue-600 px-5 py-2.5 rounded-xl font-bold">
+                        Réserver
+                    </button>
+                </div>
+             </div>
+             <!-- ==========Act 6=========== -->
+             <div class="activity-card" data-category="creatif">
+                <div class="bg-gradient-to-br from-yellow-500 to-orange-500 rounded-3xl p-6 text-white">
+                    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
+                        <i class="bi bi-puzzle text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white/20 px-3 py-1 rounded-full">
+                        Créatif
+                    </span>
+                    <h3 class="text-2xl font-bold mt-4">
+                        Puzzle
+                    </h3>
+                    <p class="text-white/80 mt-2">Une animation permanente accessible aux membres.</p>
+                    <button onclick="openReservation('Puzzle')" class="mt-6 bg-white text-orange-600 px-5 py-2.5 rounded-xl font-bold">
+                        Réserver
+                    </button>
+                </div>
+             </div>
+          </div>
+    </div>
+ </section>
+ <!-- =========MEMBRES============== -->
+  <section id="membres" class="py-20 bg-slate-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <span class="text-sky-600 font-bold">ADHÉSION</span>
+            <h2 class="text-3xl sm:text-4xl font-black mt-2">Choisissez votre formule</h2>
+            <p class="text-slate-500 mt-4">Des offres adaptés à chaque profil.</p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6 mt-12">
+            <!-- =====ENFANT======= -->
+             <div class="bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition">
+                <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center">
+                   <i class="bi bi-person text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mt-6">
+                    Enfant - Ados
+                </h3>
+                <div class="mt-4">
+                    <span class="text-4xl font-black">
+                        35.000
+                    </span>
+                    <span class="text-slate-500">Ar/ an</span>
+                </div>
+                <ul class="mt-8 space-y-4 text-slate-600">
+                    <li class="flex gap-3">
+                        <span class="text-green-500"><i class="bi bi-check text-2xl"></i></span>
+                        PS5: 2 séances de 30 min/mois
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-green-500"><i class="bi bi-check text-2xl"></i></span>
+                        Ordi: 15 min/jour
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-green-500"><i class="bi bi-check text-2xl"></i></span>
+                        1 conférences gratuits/mois
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-green-500"><i class="bi bi-check text-2xl"></i></span>
+                        Atelier KABARY
+                    </li>
+                </ul>
+                <button ondblclick="choosePlan('Enfant - Ados')" class="w-full mt-8 border-2 border-sky-600 text-sky-600 hover:bg-sky-600 hover:text-white py-3 rounded-xl font-bold transition">
+                    Choisissez cette formule
+                </button>
+             </div>
+             <!-- ===========ADULTE=========== -->
+              <div class="bg-[#005383] text-white rounded-3xl p-8 shadow-xl relative">
+                <div class="absolute top-5 right-5 bg-white text-sky-600 py-1 px-3 rounded-full text-xs font-bold">
+                    POPULAIRE
+                </div>
+                <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center">
+                   <i class="bi bi-people text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mt-6">
+                    Jeune - Adulte - Parents
+                </h3>
+                <div class="mt-4">
+                    <span class="text-4xl font-black">
+                        35.000
+                    </span>
+                    <span class="text-white/70">Ar / an</span>
+                </div>
+                <ul class="mt-8 space-y-4 text-white/90">
+                    <li>
+                        <i class="bi bi-check text-2xl"></i>
+                        PS: 2séances de 30 min/mois
+                    </li>
+                    <li>
+                        <i class="bi bi-check text-2xl"></i>
+                        Ordinateur: 15min/jour
+                    </li>
+                    <li>
+                        <i class="bi bi-check text-2xl"></i>
+                        2 conférences gratuites/mois
+                    </li>
+                    <li>
+                        <i class="bi bi-check text-2xl"></i>
+                       Accès au bon plan
+                    </li>
+                    <button onclick="choosePlan('Jeune - Adulte - parents')" class="w-full mt-8 bg-white text-sky-600 hover:bg-slate-100 py-3 rounded-xl font-bold">
+                        Choisir cette formule
+                    </button>
+                </ul>
+              </div>
+              <!-- ============VIP=========== -->
+               <div class="bg-slate-900 text-white rounded-3xl p-8 shadow-xl">
+                    <div class="w-14 h-14 bg-yellow-400/20 text-yellow-400 rounded-2xl flex items-center justify-center">
+                    <i class="bi bi-award text-2xl"></i>
+                    </div>
+                    <h3 class=" text-xl font-bold mt-6">
+                         VIP
+                    </h3>
+                    <div class="mt-4">
+                        <span class="text-4xl font-black">40.000</span>
+                        <span class="text-slate-400">Ar / an</span>
+                    </div>
+                    <ul class="mt-8 space-y-4 text-slate-300">
+                        <li>
+                            <i class="bi bi-check text-2xl"></i>
+                            PS5: 2 séances d'une heure par mois
+                        </li>
+                        <li>
+                            <i class="bi bi-check text-2xl"></i>
+                            Conférences gratuites/mois
+                        </li>
+                        <li>
+                            <i class="bi bi-check text-2xl"></i>
+                            Coworking
+                        </li>
+                        <li>
+                            <i class="bi bi-check text-2xl"></i>
+                            Visioconférences
+                        </li>
+                        <li>
+                            <i class="bi bi-check text-2xl"></i>
+                            Réunion
+                        </li>
+                        <li>
+                            <i class="bi bi-check text-2xl"></i>
+                            Impression
+                        </li>
+                        <li>
+                            <i class="bi bi-check text-2xl"></i>
+                           Réduction location vie associative Makay
+                        </li>
+                    </ul>
+                    <button onclick="choosePlan('VIP')" class="w-full mt-8 bg-yellow-400 text-slate-900 hover:bg-yellow-300 py-3 rounded-xl font-bold">
+                        Devenir VIP
+                    </button>
+               </div>
+        </div>
+    </div>
+  </section>
+  <!-- =====ESPACE============ -->
+   <section id="espaces" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <span>
+                    NOS ESPACES
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-black mt-3">
+                    Un lieu pensé pour la communauté
+                </h2>
+                <p class="text-slate-500 mt-5 leading-relaxed">
+                    Profitez de différents espaces pour apprendre, travailler, jouer, lire ou simplement passer un bon moment ensemble.
+                </p>
+                <div class="mt-8 space-y-5">
+                    <div class="flex gap-4">
+                        <div class="w-12 h-12 bg-sky-600 rounded-xl flex items-center justify-center shrink-0">
+                            <i class="bi bi-people text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold">
+                                Salle des membres
+                            </h3>
+                            <p class="text-sm text-slate-500">
+                                Un espace convivial pour les rencontres.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center shrink-0">
+                            <i class="bi bi-display text-2xl" ></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold">Salle numérique</h3>
+                            <p class="text-sm text-slate-500">
+                                Coworking, visio, réunion et impression.
+                            </p>
+                        </div>
+
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center shrink-0">
+                            <i class="bi bi-controller text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold">Salle MAKAY</h3>
+                            <p class="text-sm text-slate-500">
+                               Jeux, animation et activités communautaires.
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+               <div class="group relative  text-white rounded-3xl p-7 min-h-48 flex flex-col justify-end overflow-hidden">
+                    <img src="/src/Images/Salle numérique.webp" alt="" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110">
+                    <div class="absolute inset-0 bg-black/50"></div>
+                    <div class="relative z-10">
+                        <i class="bi bi-book text-2xl mb-4"></i>
+                        <h3 class="text-xl font-bold"> Lecture</h3>
+                        <p class="text-white/80 text-sm mt-1">Livres et découverte</p>
+                    </div>
+                </div>
+                <div class="group relative  text-white rounded-3xl p-7 min-h-48 flex flex-col justify-end overflow-hidden">
+                    <img src="/src/Images/créatif.webp" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110" alt="">
+                    <div class="absolute inset-0 bg-black/50"></div>
+                    <div class="relative z-10">
+                        <i class="bi bi-pen-fill"></i>
+                        <h3 class="text-xl font-bold">Bar créatif</h3>
+                        <p class="text-white/70 text-sm mt-1">
+                            Créativité et partage
+                        </p>
+                    </div>
+                </div>
+                <div class="group relative text-white rounded-3xl p-7 min-h-48 flex flex-col justify-end overflow-hidden">
+                    <img src="/src/Images/salle de musique.webp" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110" alt="">
+                    <div class="absolute inset-0 bg-black/50"></div>
+                    <div class="relative z-10">
+                        <i class="bi bi-dice-6 text-2xl"></i>
+                        <h3 class="text-xl font-bold">Jeux</h3>
+                        <p class="text-white/70 text-sm mt-1">
+                            Echecs, domino, cartes...
+                        </p>
+                    </div>
+                </div>
+                <div class="group relative text-white rounded-3xl p-7 min-h-48 flex flex-col justify-end overflow-hidden">
+                    <img src="/src/Images/Salle numérique.webp" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110" alt="">
+                    <div class="absolute inset-0 bg-black/50"></div>
+                    <div class="relative z-10">
+                        <i class="bi bi-display text-2xl"></i>
+                        <h3 class="text-xl font-bold">Numérique</h3>
+                        <p class="text-white/70 text-sm mt-1">
+                            Coworking & visio
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+   </section>
+   <footer id="contact" class="bg-slate-900 text-white pt-16 pb-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-3 gap-10">
+            <div>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-center w-50 h-50 object-cover overflow-hidden">
+                        <img src="/src/Images/cite-logo.png" alt="">
+                    </div>
+                    <p class="text-slate-400 mt-5 max-w-sm">
+                        Un espace communautaire où chacun peut apprendre, jouer, créer et partager.
+                    </p>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-bold mb-4">Navigation</h3>
+                <div class="space-y-3 text-slate-400">
+                    <a href="#accueil" class="block hover:text-white">Accueil</a>
+                    <a href="#activites" class="block hover:text-white">Activités</a>
+                    <a href="#membres" class="block hover:text-white">Membres</a>
+                    <a href="#espaces" class="block hover:text-white">Espaces</a>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-bold mb-4">Contact</h3>
+                <div class="space-y-3 text-slate-400">
+                    <p>
+                        <i class="bi bi-geo-alt-fill text-2xl"></i>
+                        2 place de l'indépendance antaninarenina, Antananarivo 101
+                    </p>
+                    <P>
+                        <i class="bi bi-telephone-fill text-2xl"></i>
+                         +261 32 03 795 52
+                    </P>
+                    <p>
+                        <i class="bi bi-envelope-at-fill text-2xl"></i>
+                        contact@citedescultures.com
+                    </p>
+
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-slate-800 mt-12 pt-6 text-center text-sm text-slate-500">
+            © 2026 CIDC. Tous droits réservés.
+        </div>
+    </div>
+   </footer>
+   
+    <!-- ================= MES ACTIVITÉS ================= -->
+    <div id="activitiesModal"
+         class="hidden fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl">
+
+            <div class="sticky top-0 bg-white z-10 px-6 sm:px-8 pt-6 pb-4 border-b border-slate-100">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h2 class="text-2xl font-black">Vos activités</h2>
+                        <p class="text-slate-500 text-sm mt-1">
+                            Les réservations associées à votre compte.
+                        </p>
+                        <p id="currentClientName" class="text-sky-600 font-bold mt-2"></p>
+                    </div>
+
+                    <button type="button" onclick="closeActivities()"
+                            class="p-2 hover:bg-slate-100 rounded-xl">
+                        <i class="bi bi-x-lg text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-6 sm:p-8">
+                <div id="noActivities"
+                     class="hidden p-8 rounded-2xl bg-slate-50 text-center">
+                    <i class="bi bi-calendar-x text-4xl text-slate-300"></i>
+                    <p class="mt-3 font-semibold text-slate-600">
+                        Vous n'avez encore aucune activité réservée.
+                    </p>
+                    <button type="button" onclick="closeActivities(); openReservation();"
+                            class="mt-5 bg-sky-600 hover:bg-sky-700 text-white px-5 py-3 rounded-xl font-bold">
+                        Réserver une activité
+                    </button>
+                </div>
+
+                <div id="activitiesList" class="space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================MODALE RESERVATION=================== -->
+    <div id="reservationModal" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-y-auto  shadow-2xl">
+            <div class="sticky top-0 bg-white z-10 px-6 sm:px-8 pt-6 pb-4 border-b border-slate-100">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h2 class="text-2xl font-black">Réserver une activité</h2>
+                        <p class="text-slate-500 text-sm mt-1">
+                            Consultez les créneaux disponibles avnt de réserver.
+                        </p>
+                    </div>
+                    <button onclick="closeReservation()" class="p-2 hover:bg-slate-100 rounded-xl">
+                        <i class="bi bi-x-lg text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6 sm:p-8">
+                <div class="mb-6">
+                    <label for="activity" class="block text-sm font-semibold mb-2">Activité</label>
+                    <select id="activity" onchange="updateAgenda()" class="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-sky-500">
+                        <option value="">Choisir une activité</option>
+                        <option value="PS5">PS5</option>
+                        <option value="Jeux de société">Jeux de société</option>
+                        <option value="Coin lecture">Coin lecture</option>
+                        <option value="Coloriage">Coloriage</option>
+                        <option value="Espace numérique">Espace numérique</option>
+                        <option value="Puzzle">Puzzle</option>
+                    </select>
+                </div>
+                <!-- ========AGENDA=========== -->
+                <div class="border border-slate-200 rounded-2xl overflow-hidden">
+                    <div class="flex items-center justify-between p-4 bg-slate-50 border-b">
+                        <button id="previousMonthButton" class="p-2 hover:bg-white rounded-lg transition">
+                             <i class="bi bi-chevron-left text-2xl"></i>
+                        </button>
+                        <div class="text-center">
+                            <h3 id="calendarTitle" class="font-bold">Calendrier</h3>
+                        </div>
+                        <button id="nextMonthButton" class="p-2 hover:bg-white rounded-lg transition">
+                            <i class="bi bi-chevron-right text-2xl"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-7 text-center text-xs font-bold text-slate-500 border-b">
+                        <div class="p-3">
+                            Lun
+                        </div>
+                        <div class="p-3">
+                            Mar
+                        </div>
+                        <div class="p-3">
+                            Mer
+                        </div>
+                        <div class="p-3">
+                            Jeu
+                        </div>
+                        <div class="p-3">
+                            Ven
+                        </div>
+                        <div class="p-3">
+                            Sam
+                        </div>
+                        <div class="p-3">
+                            Dim
+                        </div>
+                    </div>
+                    <div id="calendar" class="grid grid-cols-7">
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-5 mt-4 text-xs text-slate-500">
+                    <span class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-green-500">
+                        </span>
+                        Disponible
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-red-500">
+                        </span>
+                        Réservé
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-sky-600">
+                        </span>
+                        Séléctionné
+                    </span>
+                </div>
+
+                <div class="mt-7">
+                    <div class="mb-4">
+                        <h3 class="font-bold">
+                            Créneaux
+                        </h3>
+                        <p id="selectedDateText" class="text-sm text-sm text-[#A71D78]">
+                            Sélectionnez une date dans le calendrier
+                        </p>
+                    </div>
+                    <div id="timeSlots" class="grid sm:grid-cols-2 gap-3">
+                        <p class="text-sm text-slate-400 sm:col-span-2">
+                            Aucun créneaux séléctionné
+                        </p>
+                    </div>
+                </div>
+                <!-- ===========FORMULAIRE========== -->
+                 <form id="reservationForm" class="mt-7 pt-7 border-t border-slate-200">
+                     <input type="hidden" id="date">
+                    <input type="hidden" id="time">
+                    <button id="submitReservation" type="submit" disabled class="w-full bg-slate-300 text-slate-500 py-3.5 rounded-xl font-bold cursor-not-allowed">
+                        Sélectionnez un créneau
+                    </button>
+                 </form>
+            </div>
+        </div> 
+    </div>
+</body>
+</html>
