@@ -37,10 +37,7 @@ const monthNames = [
 
 ];
 
-
-// =====================================================
 // ECHAPPEMENT HTML
-// =====================================================
 
 function escapeHtml(value) {
     return String(value ?? "")
@@ -52,14 +49,10 @@ function escapeHtml(value) {
 
 }
 
-
-// =====================================================
 // FORMATER UNE DATE
-// =====================================================
 
 function formatDate(dateString) {
-    const date =
-        new Date(
+    const date = new Date(
             dateString + "T00:00:00"
         );
     return date.toLocaleDateString(
@@ -74,24 +67,16 @@ function formatDate(dateString) {
 
 }
 
-
-// =====================================================
 // CREER DATE YYYY-MM-DD
-// =====================================================
 
-function createDateString(
-    year,month,day
-) {
+function createDateString(year,month,day) {
     return (
         year +"-" + String(month + 1).padStart(2, "0") +"-" +
         String(day).padStart(2, "0")
     );
 }
 
-
-// =====================================================
 // MENU MOBILE
-// =====================================================
 
 function initMobileMenu() {
     const menuButton = document.getElementById("menuButton");
@@ -111,10 +96,7 @@ function initMobileMenu() {
 
 // FILTRE ACTIVITES
 
-function filterActivites(
-    category,
-    event
-) {
+function filterActivites( category,  event) {
     const cards = document.querySelectorAll(".activity-card");
     cards.forEach(card => {
         const cardCategory = card.dataset.category;
@@ -153,830 +135,292 @@ function showAuth() {
     }
     authModal.classList.remove("hidden");
     authModal.classList.add("flex");
-
-    document.body
-        .classList
-        .add("overflow-hidden");
+    document.body.classList .add("overflow-hidden");
 
 }
 
-
-// =====================================================
 // CACHER AUTH
-// =====================================================
 
 function hideAuth() {
+    if (!authModal) { return; }
 
-    if (!authModal) {
-
-        return;
-
-    }
-
-
-    authModal
-        .classList
-        .add("hidden");
-
-    authModal
-        .classList
-        .remove("flex");
-
-    document.body
-        .classList
-        .remove(
-            "overflow-hidden"
-        );
+    authModal.classList .add("hidden");
+    authModal.classList.remove("flex");
+    document.body.classList.remove("overflow-hidden");
 
 }
 
-
-// =====================================================
 // MODE CONNEXION
-// =====================================================
 
 function showLoginMode() {
-
-    registerForm
-        ?.classList
-        .add("hidden");
-
-    loginForm
-        ?.classList
-        .remove("hidden");
-
-    forgotPasswordButton
-        ?.classList
-        .remove("hidden");
-
-
-    const title =
-        document.getElementById(
-            "authTitle"
-        );
-
-    const description =
-        document.getElementById(
-            "authDescription"
-        );
-
+    registerForm.classList .add("hidden");
+    loginForm.classList.remove("hidden");
+    forgotPasswordButton.classList.remove("hidden");
+    const title = document.getElementById("authTitle");
+    const description = document.getElementById( "authDescription");
 
     if (title) {
-
-        title.textContent =
-            "Connexion";
-
+        title.textContent ="Connexion";
     }
-
 
     if (description) {
-
-        description.textContent =
-            "Connectez-vous pour accéder à votre espace.";
-
+        description.textContent ="Connectez-vous pour accéder à votre espace.";
     }
 
-
     if (switchAuth) {
-
-        switchAuth.textContent =
-            "Je veux créer un compte";
-
+        switchAuth.textContent = "Je veux créer un compte";
     }
 
 }
 
-
-// =====================================================
 // MODE INSCRIPTION
-// =====================================================
 
 function showRegisterMode() {
+    loginForm.classList .add("hidden");
+    registerForm.classList.remove("hidden");
+    forgotPasswordButton.classList .add("hidden");
 
-    loginForm
-        ?.classList
-        .add("hidden");
-
-    registerForm
-        ?.classList
-        .remove("hidden");
-
-    forgotPasswordButton
-        ?.classList
-        .add("hidden");
-
-
-    const title =
-        document.getElementById(
-            "authTitle"
-        );
-
-    const description =
-        document.getElementById(
-            "authDescription"
-        );
-
+    const title = document.getElementById("authTitle");
+    const description = document.getElementById("authDescription");
 
     if (title) {
-
-        title.textContent =
-            "Créer votre compte";
-
+        title.textContent = "Créer votre compte";
     }
-
 
     if (description) {
-
-        description.textContent =
-            "Créez votre compte pour accéder à CiteActive.";
-
+        description.textContent ="Créez votre compte pour accéder à CiteActive.";
     }
-
 
     if (switchAuth) {
-
-        switchAuth.textContent =
-            "J'ai déjà un compte";
-
+        switchAuth.textContent = "J'ai déjà un compte";
     }
 
 }
 
-
-// =====================================================
 // INSCRIPTION
-// =====================================================
 
 async function registerUser(event) {
-
     event.preventDefault();
+    const name = document.getElementById( "registerName").value.trim();
+    const phone = document.getElementById("registerPhone").value.trim();
+    const email = document .getElementById("registerEmail").value.trim();
+    const password =document.getElementById("registerPassword").value;
 
-
-    const name =
-        document
-            .getElementById(
-                "registerName"
-            )
-            ?.value
-            .trim();
-
-
-    const phone =
-        document
-            .getElementById(
-                "registerPhone"
-            )
-            ?.value
-            .trim();
-
-
-    const email =
-        document
-            .getElementById(
-                "registerEmail"
-            )
-            ?.value
-            .trim();
-
-
-    const password =
-        document
-            .getElementById(
-                "registerPassword"
-            )
-            ?.value;
-
-
-    if (
-        !name ||
-        !phone ||
-        !email ||
-        !password
-    ) {
-
-        alert(
-            "Veuillez remplir tous les champs."
-        );
-
+    if (!name ||!phone || !email ||!password) {
+        alert("Veuillez remplir tous les champs.");
         return;
-
     }
 
-
-    if (
-        password.length < 6
-    ) {
-
-        alert(
-            "Le mot de passe doit contenir au moins 6 caractères."
-        );
-
+    if ( password.length < 6) {
+        alert("Le mot de passe doit contenir au moins 6 caractères.");
         return;
-
     }
 
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
-            .auth
-            .signUp({
-
-                email,
-
-                password,
-
-                options: {
-
-                    data: {
-
-                        name,
-
-                        phone
-
-                    }
-
-                }
-
+    const { data, error} =await supabaseClient.auth.signUp({
+        email,password,
+        options: {data: {name, phone } }
             });
 
-
     if (error) {
-
         console.error(error);
-
-        alert(
-            "Erreur lors de l'inscription : " +
-            error.message
-        );
-
+        alert( "Erreur lors de l'inscription : " + error.message);
         return;
-
     }
-
 
     if (!data.session) {
-
-        alert(
-            "Compte créé. Vérifiez votre adresse email puis connectez-vous."
-        );
-
+        alert("Compte créé. Vérifiez votre adresse email puis connectez-vous.");
         showLoginMode();
-
         return;
-
     }
-
-
     await loadCurrentUser();
-
-
-    alert(
-        `Bienvenue ${name} !`
-    );
+    alert(`Bienvenue ${name} !`);
 
 }
 
 
-// =====================================================
 // CONNEXION
-// =====================================================
 
 async function loginUser(event) {
     event.preventDefault();
 
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
 
-    const email =
-        document
-            .getElementById(
-                "loginEmail"
-            )
-            ?.value
-            .trim();
-
-
-    const password =
-        document
-            .getElementById(
-                "loginPassword"
-            )
-            ?.value;
-
-
-    if (
-        !email ||
-        !password
-    ) {
-
-        alert(
-            "Veuillez saisir votre email et votre mot de passe."
-        );
-
+    if (!email ||!password) {
+        alert("Veuillez saisir votre email et votre mot de passe.");
         return;
-
     }
 
-
-    const {
-        error
-    } =
-        await supabaseClient
-            .auth
-            .signInWithPassword({
-
+    const {error} = await supabaseClient.auth.signInWithPassword({
                 email,
-
                 password
-
             });
 
-
     if (error) {
-
         console.error(error);
-
-        alert(
-            "Connexion impossible : " +
-            error.message
-        );
-
+        alert("Connexion impossible :" +error.message );
         return;
-
     }
-
-
     await loadCurrentUser();
-
-
-    alert(
-        "Connexion réussie !"
-    );
-
+    alert("Connexion réussie !");
 }
 
-
-// =====================================================
 // DECONNEXION
-// =====================================================
 
 async function logoutUser() {
-
-    const {
-        error
-    } =
-        await supabaseClient
-            .auth
-            .signOut();
-
-
+    const {error} = await supabaseClient.auth.signOut();
     if (error) {
-
         console.error(error);
-
-        alert(
-            "Erreur lors de la déconnexion : " +
-            error.message
-        );
-
+        alert("Erreur lors de la déconnexion : "+error.message);
         return;
-
     }
-
-
     currentUser = null;
-
-
-    const displayName =
-        document.getElementById(
-            "userDisplayName"
-        );
-
-
-    if (displayName) {
-
-        displayName.textContent =
-            "";
-
-    }
-
-
+    const displayName =document.getElementById("userDisplayName");
+    if (displayName) {displayName.textContent ="";}
     showAuth();
-
     showLoginMode();
-
 }
 
-
-// =====================================================
 // MOT DE PASSE OUBLIE
-// =====================================================
 
 async function resetPassword() {
-
-    const email =
-        document
-            .getElementById(
-                "loginEmail"
-            )
-            ?.value
-            .trim();
-
-
+    const email =document.getElementById("loginEmail").value.trim();
     if (!email) {
-
-        alert(
-            "Saisissez d'abord votre adresse email."
-        );
-
+        alert("Saisissez d'abord votre adresse email.");
         return;
-
     }
 
-
-    const {
-        error
-    } =
-        await supabaseClient
-            .auth
-            .resetPasswordForEmail(
-                email,
-                {
-
+    const {error} =
+        await supabaseClient.auth.resetPasswordForEmail(email,{
                     redirectTo:
                         window.location.origin +
                         window.location.pathname
-
                 }
             );
 
-
     if (error) {
-
         console.error(error);
-
-        alert(
-            "Impossible d'envoyer le lien : " +
-            error.message
-        );
-
+        alert("Impossible d'envoyer le lien : " + error.message);
         return;
-
     }
-
-
-    alert(
-        "Un lien de réinitialisation a été envoyé."
-    );
-
+    alert("Un lien de réinitialisation a été envoyé.");
 }
 
-
-// =====================================================
 // RECUPERER PROFIL
-// =====================================================
-
 async function getMyProfile() {
-
     if (!currentUser) {
-
         return null;
-
     }
-
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
-
-            .from("profiles")
-
-            .select(
-                "id, name, phone"
-            )
-
-            .eq(
-                "id",
-                currentUser.id
-            )
-
+    const {data,error} =
+        await supabaseClient.from("profiles").select("id, name, phone")
+            .eq("id",currentUser.id)
             .maybeSingle();
 
-
-    if (error) {
-
-        console.error(
-            "Erreur profil :",
-            error
-        );
-
+    if (error) {console.error("Erreur profil :", error);
         return null;
-
     }
-
-
     return data;
-
 }
 
-
-// =====================================================
 // UTILISATEUR ACTUEL
-// =====================================================
 
 async function loadCurrentUser() {
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
-            .auth
-            .getUser();
-
-
-    if (
-        error ||
-        !data.user
-    ) {
-
+    const {data,error} = await supabaseClient.auth.getUser();
+    if (error || !data.user) {
         currentUser = null;
-
         showAuth();
-
         return null;
-
     }
+    currentUser = data.user;
+    const profile = await getMyProfile();
 
-
-    currentUser =
-        data.user;
-
-
-    const profile =
-        await getMyProfile();
-
-
-    const displayName =
-        document.getElementById(
-            "userDisplayName"
-        );
-
+    const displayName = document.getElementById("userDisplayName");
 
     if (displayName) {
-
-        displayName.textContent =
-
-            profile?.name ||
-
-            currentUser
-                .user_metadata
-                ?.name ||
-
-            currentUser.email ||
-
-            "";
-
+        displayName.textContent = profile?.name || currentUser.user_metadata?.name || currentUser.email ||"";
     }
-
-
     hideAuth();
-
-
     return currentUser;
-
 }
 
-
-// =====================================================
 // OUVRIR RESERVATION
-// =====================================================
 
-async function openReservation(
-    activity = ""
-) {
-
+async function openReservation(activity = "") {
     if (!currentUser) {
-
         showAuth();
-
         return;
-
     }
-
-
-    const modal =
-        document.getElementById(
-            "reservationModal"
-        );
-
-
+    const modal = document.getElementById("reservationModal");
     if (!modal) {
-
         return;
-
     }
 
+    const activityInput = document.getElementById("activity");
 
-    const activityInput =
-        document.getElementById(
-            "activity"
-        );
-
-
-    if (
-        activityInput &&
-        activity
-    ) {
-
-        activityInput.value =
-            activity;
-
+    if ( activityInput && activity) {
+        activityInput.value = activity;
     }
-
-
     selectedDate = null;
-
     selectedTime = null;
-
-
-    const dateInput =
-        document.getElementById(
-            "date"
-        );
-
-
-    const timeInput =
-        document.getElementById(
-            "time"
-        );
-
-
-    if (dateInput) {
-
-        dateInput.value =
-            "";
-
+    const dateInput = document.getElementById("date");
+    const timeInput = document.getElementById("time");
+    if (dateInput) {dateInput.value = "";
     }
-
 
     if (timeInput) {
-
-        timeInput.value =
-            "";
-
+        timeInput.value = "";
     }
-
-
     resetSubmitButton();
-
-
-    modal
-        .classList
-        .remove("hidden");
-
-
-    modal
-        .classList
-        .add("flex");
-
-
-    document.body
-        .classList
-        .add(
-            "overflow-hidden"
-        );
-
-
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    document.body.classList.add("overflow-hidden");
     renderCalendar();
-
     renderTimeSlots();
-
 }
 
-
-// =====================================================
 // FERMER RESERVATION
-// =====================================================
 
 function closeReservation() {
-
-    const modal =
-        document.getElementById(
-            "reservationModal"
-        );
-
-
+    const modal = document.getElementById("reservationModal");
     if (!modal) {
-
         return;
-
     }
-
-
-    modal
-        .classList
-        .add("hidden");
-
-
-    modal
-        .classList
-        .remove("flex");
-
-
-    document.body
-        .classList
-        .remove(
-            "overflow-hidden"
-        );
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    document.body.classList.remove("overflow-hidden");
 
 }
-
-
-// =====================================================
 // CALENDRIER - INITIALISATION
-// =====================================================
 
 function initCalendarButtons() {
-
-    document
-        .getElementById(
-            "previousMonthButton"
-        )
-        ?.addEventListener(
-            "click",
-            previousMonth
-        );
-
-
-    document
-        .getElementById(
-            "nextMonthButton"
-        )
-        ?.addEventListener(
-            "click",
-            nextMonth
-        );
+    document.getElementById("previousMonthButton").addEventListener("click",previousMonth);
+    document.getElementById("nextMonthButton").addEventListener("click",nextMonth);
 
 }
 
-
-// =====================================================
 // MOIS PRECEDENT
-// =====================================================
 
 function previousMonth() {
-
     currentMonth--;
-
-
-    if (
-        currentMonth < 0
-    ) {
-
+    if (currentMonth < 0) {
         currentMonth = 11;
-
         currentYear--;
-
     }
-
-
     renderCalendar();
-
 }
 
-
-// =====================================================
 // MOIS SUIVANT
-// =====================================================
 
 function nextMonth() {
-
     currentMonth++;
-
-
-    if (
-        currentMonth > 11
-    ) {
-
+    if (currentMonth > 11) {
         currentMonth = 0;
-
         currentYear++;
-
     }
-
-
     renderCalendar();
-
 }
 
-
-// =====================================================
 // RESERVATIONS D'UN MOIS
-// =====================================================
 
 async function getReservationsForActivityMonth( activity) {
     if (!activity) {
@@ -986,249 +430,73 @@ async function getReservationsForActivityMonth( activity) {
     const lastDay = new Date( currentYear, currentMonth + 1, 0).getDate();
     const lastDate = createDateString( currentYear, currentMonth, lastDay);
 
-    const { data,error} =await supabaseClient .from("reservations") .select(
-                "date, time, activity"
-            )
+    const { data,error} =await supabaseClient .from("reservations") .select("date, time, activity")
             .eq( "activity", activity )
-            .gte(
-                "date",
-                firstDate
-            )
-
-            .lte(
-                "date",
-                lastDate
-            );
-
-
+            .gte("date",firstDate)
+            .lte("date",lastDate);
     if (error) {
-
-        console.error(
-            "Erreur calendrier :",
-            error
-        );
-
+        console.error("Erreur calendrier :",error);
         return [];
-
     }
-
-
     return data || [];
-
 }
 
-
-// =====================================================
 // AFFICHER CALENDRIER
-// =====================================================
-
 async function renderCalendar() {
-
-    const calendar =
-        document.getElementById(
-            "calendar"
-        );
-
-
-    const title =
-        document.getElementById(
-            "calendarTitle"
-        );
-
-
-    if (
-        !calendar ||
-        !title
-    ) {
-
+    const calendar = document.getElementById("calendar");
+    const title = document.getElementById("calendarTitle");
+    if (!calendar ||!title) {
         return;
-
     }
-
-
-    calendar.innerHTML =
-        "";
-
-
-    title.textContent =
-        `${monthNames[currentMonth]} ${currentYear}`;
-
-
-    const firstDay =
-        new Date(
-            currentYear,
-            currentMonth,
-            1
-        );
-
-
-    const daysInMonth =
-        new Date(
-            currentYear,
-            currentMonth + 1,
-            0
-        )
-        .getDate();
-
-
-    let startDay =
-        firstDay.getDay() - 1;
-
-
-    if (
-        startDay === -1
-    ) {
-
+    calendar.innerHTML ="";
+    title.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+    const firstDay = new Date(currentYear,currentMonth,1);
+    const daysInMonth = new Date(currentYear,currentMonth + 1,0).getDate();
+    let startDay = firstDay.getDay() - 1;
+    if (startDay === -1) {
         startDay = 6;
+    }
 
+    for (let i = 0;i < startDay;i++) {
+        const emptyCell = document.createElement("div");
+        emptyCell.className ="calendar-day min-h-12 border-b border-r border-slate-100";
+        calendar.appendChild(emptyCell);
     }
 
 
-    for (
-        let i = 0;
-        i < startDay;
-        i++
-    ) {
+    const activity = document.getElementById("activity").value ||"";
 
-        const emptyCell =
-            document.createElement(
-                "div"
-            );
+    const reservations = await getReservationsForActivityMonth(activity);
 
 
-        emptyCell.className =
-            "calendar-day min-h-12 border-b border-r border-slate-100";
+    for (let day = 1;day <= daysInMonth;day++) {
 
+        const dateString = createDateString(currentYear,currentMonth,day);
+        const button = document.createElement("button");
+        button.type ="button";
+        button.className ="calendar-day relative min-h-12 border-b border-r border-slate-100 flex items-center justify-center font-semibold hover:bg-sky-100 transition";
+        button.textContent = day;
 
-        calendar.appendChild(
-            emptyCell
-        );
+        if (dateString === selectedDate) {
+            button.classList.add( "bg-sky-600","text-white");
+        }
+        const reservationsForDay = reservations.filter(reservation => reservation.date === dateString);
 
-    }
+        if (reservationsForDay.length >= timeSlots.length) {
+            button.classList.add("bg-red-50", "text-red-600");
+            button.title = "Journée complète"; }
 
-
-    const activity =
-        document
-            .getElementById(
-                "activity"
-            )
-            ?.value ||
-        "";
-
-
-    const reservations =
-        await getReservationsForActivityMonth(
-            activity
-        );
-
-
-    for (
-        let day = 1;
-        day <= daysInMonth;
-        day++
-    ) {
-
-        const dateString =
-            createDateString(
-                currentYear,
-                currentMonth,
-                day
-            );
-
-
-        const button =
-            document.createElement(
-                "button"
-            );
-
-
-        button.type =
-            "button";
-
-
-        button.className =
-            "calendar-day relative min-h-12 border-b border-r border-slate-100 flex items-center justify-center font-semibold hover:bg-sky-100 transition";
-
-
-        button.textContent =
-            day;
-
-
-        if (
-            dateString ===
-            selectedDate
-        ) {
-
-            button.classList.add(
-                "bg-sky-600",
-                "text-white"
-            );
+        if (reservationsForDay.length > 0 && 
+            reservationsForDay.length < timeSlots.length && dateString !== selectedDate) {
+            const dot = document.createElement("span");
+            dot.className = "absolute bottom-1 w-1.5 h-1.5 bg-red-500 rounded-full";
+            button.appendChild(dot);
 
         }
-
-
-        const reservationsForDay =
-            reservations.filter(
-                reservation =>
-                    reservation.date ===
-                    dateString
-            );
-
-
-        if (
-            reservationsForDay.length >=
-            timeSlots.length
-        ) {
-
-            button.classList.add(
-                "bg-red-50",
-                "text-red-600"
-            );
-
-            button.title =
-                "Journée complète";
-
-        }
-
-
-        if (
-            reservationsForDay.length > 0 &&
-            reservationsForDay.length <
-                timeSlots.length &&
-            dateString !==
-                selectedDate
-        ) {
-
-            const dot =
-                document.createElement(
-                    "span"
-                );
-
-
-            dot.className =
-                "absolute bottom-1 w-1.5 h-1.5 bg-red-500 rounded-full";
-
-
-            button.appendChild(
-                dot
-            );
-
-        }
-
-
-        button.addEventListener(
-            "click",
-            () =>
-                selectDate(
-                    dateString
-                )
-        );
-
-
+        button.addEventListener("click",() => selectDate(dateString));
         calendar.appendChild(
             button
         );
-
     }
 
 }
