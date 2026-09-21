@@ -61,57 +61,154 @@ function formatDate(dateString){
 
 /*VERIFICATION ADMIN*/
 
-async function checkAdminAccess(){
-    try{
-        const {data,error} = await supabaseClient.auth.getUser();
-        if(error || !data.user){
+async function checkAdminAccess() {
+    try {
+        console.log("1. Vérification de l'utilisateur...");
+
+        const { data, error } =
+            await supabaseClient.auth.getUser();
+
+        console.log("Auth data :", data);
+        console.log("Auth error :", error);
+
+        if (error || !data.user) {
+            console.log("❌ Aucun utilisateur connecté");
             window.location.href = "../index.html";
             return false;
         }
+
         adminUser = data.user;
-        const {data:profil, error:profileError} = await supabaseClient.from("profiles")
-        .select("id,name,phone,role")
-        .eq("id",adminUser.id)
-        .maybeSingle();
-        if(profileError || !profile){
-            console.error("Erreur profil:",profileError);
-            alert("Votre profil est introuvable.");
-            window.location.href = "../index.html";
+
+        console.log("2. Utilisateur connecté :", adminUser);
+        console.log("ID utilisateur :", adminUser.id);
+        console.log("Email :", adminUser.email);
+
+        const { data: profil, error: profileError } =
+            await supabaseClient
+                .from("profiles")
+                .select("id, name, phone, role")
+                .eq("id", adminUser.id)
+                .maybeSingle();
+
+        console.log("3. Profil :", profil);
+        console.log("Erreur profil :", profileError);
+
+        if (profileError) {
+            console.error("❌ Erreur récupération profil :", profileError);
+            alert("Erreur récupération profil : " + profileError.message);
             return false;
         }
+
+        if (!profil) {
+            console.error("❌ Profil introuvable");
+            alert("Votre profil est introuvable.");
+            return false;
+        }
+
         adminProfile = profil;
 
-        /*Vérification rôle*/
+        console.log("4. Rôle :", adminProfile.role);
 
-        if(adminProfile.role !=="admin"){
-            alert("Accès refusé. Cette page est réservée à l'administrateur.");
-            window.location.href = "../index.html";
+        if (adminProfile.role !== "admin") {
+            console.log("❌ L'utilisateur n'est pas administrateur");
+            alert(
+                "Accès refusé.\nRôle actuel : " +
+                adminProfile.role
+            );
             return false;
         }
-        /*Afficher les infos admin */
+
+        console.log("✅ ACCÈS ADMINISTRATEUR AUTORISÉ");
 
         const adminName = document.getElementById("adminName");
         const adminEmail = document.getElementById("adminEmail");
-        if(adminName){
-            adminName.textContent = adminProfile.name || adminUser.adminemail ||"Administrateur"
-        }
-        if(adminEmail){
-            adminEmail.textContent = adminUser.email || "";
+
+        if (adminName) {
+            adminName.textContent =
+                adminProfile.name ||
+                adminUser.email ||
+                "Administrateur";
         }
 
-    /*Back-office*/
-    document.getElementById("loadinScreen").classList.add("hidden");
-    document.getElementById("adminApp").classList.remove("hidden");
-    return true;
-    }catch(error){
-        console.error("Erreur vérification admin:",error);
-        window.location.href = "../index.html";
+        if (adminEmail) {
+            adminEmail.textContent =
+                adminUser.email || "";
+        }
+
+        const loadingScreen =
+            document.getElementById("loadingScreen");
+
+        const adminApp =
+            document.getElementById("adminApp");
+
+        if (loadingScreen) {
+            loadingScreen.classList.add("hidden");
+        }
+
+        if (adminApp) {
+            adminApp.classList.remove("hidden");
+        }
+
+        return true;
+
+    } catch (error) {
+        console.error("❌ Erreur vérification admin :", error);
+        alert("Erreur : " + error.message);
         return false;
     }
 }
 
+// async function checkAdminAccess(){
+//     try{
+//         const {data,error} = await supabaseClient.auth.getUser();
+//         if(error || !data.user){
+//             window.location.href = "../index.html";
+//             return false;
+//         }
+//         adminUser = data.user;
+//         const {data:profil, error:profileError} = await supabaseClient.from("profiles")
+//         .select("id,name,phone,role")
+//         .eq("id",adminUser.id)
+//         .maybeSingle();
+//         if(profileError || !profile){
+//             console.error("Erreur profil:",profileError);
+//             alert("Votre profil est introuvable.");
+//             window.location.href = "../index.html";
+//             return false;
+//         }
+//         adminProfile = profil;
+
+//         /*Vérification rôle*/
+
+//         if(adminProfile.role !=="admin"){
+//             alert("Accès refusé. Cette page est réservée à l'administrateur.");
+//             window.location.href = "../index.html";
+//             return false;
+//         }
+//         /*Afficher les infos admin */
+
+//         const adminName = document.getElementById("adminName");
+//         const adminEmail = document.getElementById("adminEmail");
+//         if(adminName){
+//             adminName.textContent = adminProfile.name || adminUser.adminemail ||"Administrateur"
+//         }
+//         if(adminEmail){
+//             adminEmail.textContent = adminUser.email || "";
+//         }
+
+//     /*Back-office*/
+//     document.getElementById("loadinScreen").classList.add("hidden");
+//     document.getElementById("adminApp").classList.remove("hidden");
+//     return true;
+//     }catch(error){
+//         console.error("Erreur vérification admin:",error);
+//         window.location.href = "../index.html";
+//         return false;
+//     }
+// }
+
 function showSection(sectionName){
-    document.querySelectorAll("admin-section")
+    document.querySelectorAll(".admin-section")
     .forEach(section =>{
         section.classList.add("hidden");
     });
@@ -189,7 +286,7 @@ async function loadReservations() {
 
 /*---AFFICHER RESERVATIONS----------*/
 
-function renderActivities(reservations){
+function renderReservations(reservations){
     const table = document.getElementById("reservationsTable");
     if(!table){
         return;
@@ -218,7 +315,7 @@ function renderActivities(reservations){
                     ))}
                 </td>
                 <td class="px-5 py-4 text-sm">
-                    ${escapeHtml(Sting(
+                    ${escapeHtml(String(
                         reservation.time || ""
                     ).slice(0,5))}
                 </td>
@@ -254,7 +351,7 @@ async function loadUsers(){
                 Chargement des membres...
             </td>
         </tr>`;
-    const {data,error} = await supabaseClient.from(profiles)
+    const {data,error} = await supabaseClient.from("profiles")
     .select("id,name,phone,role").order("name",{
         ascending:true
     });
@@ -315,3 +412,193 @@ table.innerHTML = users.map(user =>`
             </td>
         </tr>`).join()
 }
+
+/*ACTIVITES*/
+function renderActivities(){
+    const grid = document.getElementById("activitiesGrid");
+    // if(!grid){
+    //     return;
+    // }
+    grid.innerHTML = activities.map(activity=>`
+        <div class = "bg-white rounded-2xl p-6 border border-slate-200">
+            <div class = "w-12 h-12 rounded-xl bg-[#a71d78]/10 flex items-center justify-center">
+                <i class="bi ${escapeHtml(activity.icon)} text-xl"></i>
+            </div>
+            <span class="inline-block mt-5 px-3 py-1 rounded-full bg-slate-100 text-xs font-bold">
+                ${escapeHtml(activity.category)}
+            </span>
+            <h3 class="font-black text-xl mt-3">
+                ${escapeHtml(activity.name)}
+            </h3>
+            <p class="text-slate-500 text-sm mt-2">
+                ${escapeHtml(activity.description)}
+            </p>
+        </div>
+        `).join("");
+}
+
+/*STATISTIQUES*/
+
+async function updateDashboardStats(){
+    const {count:usersCount} = await supabaseClient.from("profiles").select("id",{count:"exact",head:true});
+
+    const {count:reservationsCount} = await supabaseClient.from("reservations").select("id",{count:"exact",head:true});
+
+    const{count:startedCount} = await supabaseClient.from("reservations").select("id",{count:"exact",head:true})
+                                .eq("is_started",true);
+    const usersElement = document.getElementById("dashboardUsersCount");
+    const reservationsElement = document.getElementById("dashboardReservationsCount");
+    const activitiesElement = document.getElementById("dashboardActivitiesCount");
+    const startedElement = document.getElementById("dashboardStartedCount");
+
+    if(usersElement){
+        usersElement.textContent = usersCount ?? 0;
+    }
+    if(reservationsElement){
+        usersElement.textContent = usersCount ?? 0;
+    }
+    if(reservationsElement){
+        reservationsElement.textContent = reservationsCount ?? 0;
+    }
+    if(activitiesElement){
+        activitiesElement.textContent = activities.length;
+    }
+    if(startedElement){
+        startedElement.textContent = startedCount ?? 0;
+    }
+}
+
+/*RESERVATIONS RECENTES*/
+
+async function loadRecentReservations(){
+    const container = document.getElementById("recentReservations");
+    if(!container){
+        return;
+    }
+    const{data,error} = await supabaseClient.from("reservations").select("id,user_id,activity,date,time,is_started").order("created_at",{ascending:false}).limit(5);
+    if(error){
+        console.error("Erreur de récupération récente:",error);
+        container.innerHTML = `
+            <p class = "text-center text-red-500 py-5">Impossible de récupérer les réservations.</p>`;
+            return;
+    }
+    if(!data || data.length === 0){
+        container.innerHTML = `
+            <p class = "text-center text-slate-400 py-8">Aucune réservation pour le moment.</p>`;
+            return;
+    }
+    container.innerHTML = data.map(
+        reservation =>`
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-4 border-b border-slate-100 last:border-0">
+            <div>
+                <p class = "font-bold">${escapeHtml(reservation.activity)}</p>
+                <p class = "text-sm text-slate-500 mt-1">
+                    ${escapeHtml(formatDate(reservation.date))}•${escapeHtml(String(reservation.time || "").slice(0,5))}
+                </p>
+            </div>
+            ${reservation.is_started?`
+                <span class = "self-start sm:self-auto px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold">
+                    En cours
+                </span>`: 
+                `<span class = "self-start sm:self-auto px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold">
+                    Réservée
+                </span>`}
+        </div>`
+    ).join("");
+}
+
+/*RECHERCHES RESERVATIONS*/
+
+function searchReservations(value){
+    const search = value.trim().toLowerCase();
+    if(!search){
+        renderReservations(allReservations);
+        return;
+    }
+    const filtered = allReservations.filter(reservation =>String(reservation.activity || "").toLowerCase().includes(search));
+    renderReservations(filtered);
+}
+
+/*RECHERCHES MEMBRES*/
+
+function searchUsers(value){
+    const search = value.trim().toLowerCase();
+    if(!search){
+        renderUsers(allUsers);
+        return;
+    }
+    const filtered = allUsers.filter(user=>String(user.name || "").toLowerCase().includes(search)|| String(user.phone || "").toLowerCase().includes(search));
+    renderUsers(filtered);
+}
+
+/*SIDEBAR MOBILE*/
+
+function openMobileSidebar(){
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+    sidebar?.classList.remove("-translate-x-full");
+    overlay?.classList.remove("hidden");
+}
+
+function closeMobileSidebar(){
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+
+    if(window.innerWidth<1024){
+        sidebar?.classList.add("-translate-x-full");
+        overlay?.classList.add("hidden");
+    }
+}
+
+/*DECONNEXION*/
+
+async function  logoutAdmin(){
+    const {error} = await supabaseClient.auth.signOut();
+    if(error){
+        console.error("Erreur de déconnexion:",error);
+        alert("Erreur lors de la déconnexion");
+        return;
+    }
+    window.location.href = "../index.html";
+}
+
+document.addEventListener("DOMContentLoaded",async ()=>{
+    const isAdmin = await checkAdminAccess();
+
+    if(!isAdmin){
+        return;
+    }
+    document.querySelectorAll(".admin-menu").forEach(button=>{
+        button.addEventListener("click",()=>{
+            showSection(button.dataset.section)
+        })
+    });
+    document.getElementById("menuButton")?.addEventListener("click",openMobileSidebar);
+    document.getElementById("sidebarOverlay")?.addEventListener("click",closeMobileSidebar);
+    document.getElementById("logoutButton")?.addEventListener("click",logoutAdmin);
+    document.getElementById("reservationSearch")?.addEventListener("input",event=>{
+        searchReservations(event.target.value);
+    });
+    document.getElementById("userSearch")?.addEventListener("input",event=>{
+        searchUsers(event.target.value);
+    });
+
+    document.getElementById("refreshReservations")?.addEventListener("click",async()=>{
+        await loadReservations();
+        await loadRecentReservations();
+        await updateDashboardStats();
+    });
+    renderActivities();
+    await loadReservations();
+    await loadUsers();
+    await loadRecentReservations();
+    await updateDashboardStats();
+
+
+    supabaseClient.auth.onAuthStateChange(async(_event,session)=>{
+        if(!session?.user){
+            window.location.href = "../index.html";
+        }
+    })
+
+});

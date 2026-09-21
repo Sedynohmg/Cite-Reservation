@@ -239,6 +239,9 @@ async function registerUser(event) {
 
 
 // CONNEXION
+// =====================================================
+// CONNEXION
+// =====================================================
 
 async function loginUser(event) {
     event.preventDefault();
@@ -246,24 +249,113 @@ async function loginUser(event) {
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value;
 
-    if (!email ||!password) {
+    if (!email || !password) {
         alert("Veuillez saisir votre email et votre mot de passe.");
         return;
     }
 
-    const {error} = await supabaseClient.auth.signInWithPassword({
-                email,
-                password
-            });
+    // Connexion avec Supabase Auth
+    const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+        });
 
     if (error) {
-        console.error(error);
-        alert("Connexion impossible :" +error.message );
+        console.error("Erreur de connexion :", error);
+
+        alert("Connexion impossible : " + error.message);
+
         return;
     }
+
+    // Vérifier que Supabase nous a bien donné un utilisateur
+    if (!data || !data.user) {
+        alert("Impossible de récupérer l'utilisateur connecté.");
+        return;
+    }
+
+    // Utilisateur connecté
+    currentUser = data.user;
+
+    console.log("Utilisateur connecté :", currentUser);
+
+    // Récupérer son profil dans public.profiles
+    const { data: profile, error: profileError } =
+        await supabaseClient
+            .from("profiles")
+            .select("id, name, phone, role")
+            .eq("id", currentUser.id)
+            .maybeSingle();
+
+    if (profileError) {
+        console.error(
+            "Erreur récupération profil :",
+            profileError
+        );
+
+        alert("Impossible de récupérer votre profil.");
+
+        return;
+    }
+
+    if (!profile) {
+        alert("Votre profil est introuvable.");
+
+        return;
+    }
+
+    console.log("Profil utilisateur :", profile);
+    console.log("Rôle :", profile.role);
+
+    // ==========================================
+    // CAS ADMINISTRATEUR
+    // ==========================================
+
+    if (profile.role === "admin") {
+
+        alert("Connexion administrateur réussie !");
+
+        window.location.href = "admin/admin.html";
+
+        return;
+    }
+
+    // ==========================================
+    // CAS UTILISATEUR NORMAL
+    // ==========================================
+
     await loadCurrentUser();
+
     alert("Connexion réussie !");
 }
+
+
+
+// async function loginUser(event) {
+//     event.preventDefault();
+
+//     const email = document.getElementById("loginEmail").value.trim();
+//     const password = document.getElementById("loginPassword").value;
+
+//     if (!email ||!password) {
+//         alert("Veuillez saisir votre email et votre mot de passe.");
+//         return;
+//     }
+
+//     const {error} = await supabaseClient.auth.signInWithPassword({
+//                 email,
+//                 password
+//             });
+
+//     if (error) {
+//         console.error(error);
+//         alert("Connexion impossible :" +error.message );
+//         return;
+//     }
+//     await loadCurrentUser();
+//     alert("Connexion réussie !");
+// }
 
 // DECONNEXION
 

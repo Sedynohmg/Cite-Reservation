@@ -130,13 +130,15 @@
                     <a href="#membres" class="hover:text-[#A71D78] transition">Membres</a>
                     <a href="#espaces" class="hover:text-[#A71D78]   transition">Espaces</a>
                     <a href="#contact" class="hover:text-[#A71D78] transition">Contact</a>
+                    <button onclick="openActivities()" class="hidden sm:flex bg-none hover:text-[#A71D78]  font-semibold transition cursor-pointer">Vos activités</button>
                 </nav>
                 <div class="flex items-center gap-3">
                     <button onclick="openReservation()" class="hidden sm:flex bg-[#A71D78] hover:bg-[#8F1967] text-white px-5 py-2.5 rounded-xl font-semibold transition cursor-pointer">Réserver</button>
-                    <button onclick="openActivities()" class="hidden sm:flex bg-[#005383] hover:bg-[#005383]/50 text-white px-5 py-2.5 rounded-xl font-semibold transition cursor-pointer">Vos activités</button>
                     <button id="menuButton" class="md:hidden p-2 rounded-lg hover:bg-slate-100">
                         <i class="bi bi-list"></i>
                     </button>
+                    <span id="userDislayName" class="hidden sm:inline text-sm font-semibold text-slate-700"></span>
+                    
                 </div>
             </div>
             <!-- =======MENU MOBILE========== -->
@@ -651,6 +653,7 @@
                     <a href="#activites" class="block hover:text-white">Activités</a>
                     <a href="#membres" class="block hover:text-white">Membres</a>
                     <a href="#espaces" class="block hover:text-white">Espaces</a>
+                    <button id="logoutBtn" type="button" onclick="logoutUser()" class="sm:flex bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl font-semibold transition cursor-pointer">Déconnexion</button>
                 </div>
             </div>
             <div>
