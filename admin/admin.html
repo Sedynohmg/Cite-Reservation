@@ -42,7 +42,7 @@
                     <i class="bi bi-people text-lg"></i>
                     <span>Membres</span>
                 </button>
-                <button data-section="users" class="admin-menu w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left  hover:bg-white/10 transition">
+                <button data-section="activities" class="admin-menu w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left  hover:bg-white/10 transition">
                     <i class="bi bi-controller text-lg"></i>
                     <span>Activités</span>
                 </button>
@@ -246,16 +246,22 @@
                 <!---ACTIVITES DANS LE SITE----->
 
                 <section id="section-activities" class="admin-section hidden">
-                    <div class="mb-8">
-                        <h1 class="text-3xl font-black">
-                            Activités
-                        </h1>
-                        <p class="text-slate-500 mt-2">
-                            Activités actuellement utilisées dans le site.
-                        </p>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                        <div>
+                            <h1 class="text-3xl font-black">
+                                Activités
+                            </h1>
+                            <p class="text-slate-500 mt-2">
+                                Gestion des activités de CiteActive.
+                            </p>
+                        </div>
+                        <button id="addActivityButton" type="button" class="px-5 py-3 bg-[#005383] text-white rounded-xl font-semibold
+                             hover:bg-[#00446c] transition flex items-center gap-2" >
+                             <i class="bi bi-plus-lg"></i>
+                             Ajouter une activité
+                        </button>
                     </div>
-                    <div id="activitiesGrid" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                    </div>
+                    <div class="activitiesGrid" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-5"></div>
                 </section>
 
                 <!------ESPACES---->
@@ -283,5 +289,6 @@
             </main>
         </div>    
     </div>
+    
 </body>
 </html>

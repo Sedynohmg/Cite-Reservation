@@ -416,9 +416,9 @@ table.innerHTML = users.map(user =>`
 /*ACTIVITES*/
 function renderActivities(){
     const grid = document.getElementById("activitiesGrid");
-    // if(!grid){
-    //     return;
-    // }
+    if(!grid){
+        return;
+    }
     grid.innerHTML = activities.map(activity=>`
         <div class = "bg-white rounded-2xl p-6 border border-slate-200">
             <div class = "w-12 h-12 rounded-xl bg-[#a71d78]/10 flex items-center justify-center">
@@ -584,7 +584,7 @@ document.addEventListener("DOMContentLoaded",async ()=>{
     });
 
     document.getElementById("refreshReservations")?.addEventListener("click",async()=>{
-        await loadReservations();
+        await reservations();
         await loadRecentReservations();
         await updateDashboardStats();
     });
