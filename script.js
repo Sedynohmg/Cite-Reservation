@@ -94,6 +94,80 @@ function initMobileMenu() {
         });
 }
 
+function renderPublicActivities(activities){
+    const container = document.getElementById("activitiesContainer");
+    container.innerHTML = activities.map(activity=>{
+        const color = activity.color || "bg-gradient-to-br from-blue-500 to-cyan-500";
+        const icon = activity.icon || "bi bi-calendar-event";
+        return `
+        <div class = "activity-card bg-white rounded-2xl overflow-hidden border-slate-200 shadow-sm hover:shadow-lg transition"
+                data-category = "${escapeHtml(activity.category)}">
+            <div class = "${escapeHtml(color)} h-36 p-6 text-white">   
+                <div class = "w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
+                    <i class ="bi ${escapeHtml(icon)} text-3xl"></i>
+                </div>
+            </div>
+
+
+
+            
+        </div>
+        `
+    })
+}
+
+
+
+
+
+
+
+
+
+
+
+async function loadPublicActivities(){
+    const container = document.getElementById("activitiesContainer");
+    if(!container){return;}
+    container.innerHTML = `
+        <div class="col-span-full text-center py-10">
+            div class="w-10 h-10 border-4 border-slate-200 border-t-[#005383] rounded-full animate-spin mx-auto"></div>
+            <p class="text-slate-500 mt-3">
+                Chargement des activités...
+            </p>
+        </div>
+    `;
+    try{
+        const{data,error} = await supabaseClient.from("activities").select(`id,name,category,description,icon,color,active`)
+        .eq("active",true).order("created_at",{ascending:true});
+        if(error){
+            console.error("Erreur chargement activités:",error);
+            container.innerHTML = `
+                <div class = "col-span-full text-center py-10">
+                    <p class = "text-red-500 font-semibold">Impossible de charger les activités.</p>
+                </div>`;
+            return; 
+        }
+        if(!data || data.length === 0){
+            container.innerHTML = `
+                <div class = "col-span-full text-center py-10">
+                    <p class ="text-slate-400">Aucune activité disponible pour le moment.</p>
+                </div>
+            `;
+            return;
+        }
+        renderPublicActivities(data)
+    }catch(error){
+        console.error("Erreur innattendue:",error);
+        container.innerHTML = `
+            <div class = "col-span-full text-center py-10">
+                <p class = "text-red-500">Une erreur est survenue.</p>
+            </div>`;
+        
+    }
+}
+
+
 // FILTRE ACTIVITES
 
 function filterActivites( category,  event) {
@@ -237,11 +311,8 @@ async function registerUser(event) {
 
 }
 
+// CONNEXION
 
-// CONNEXION
-// =====================================================
-// CONNEXION
-// =====================================================
 
 async function loginUser(event) {
     event.preventDefault();
@@ -263,9 +334,7 @@ async function loginUser(event) {
 
     if (error) {
         console.error("Erreur de connexion :", error);
-
         alert("Connexion impossible : " + error.message);
-
         return;
     }
 
@@ -329,35 +398,6 @@ async function loginUser(event) {
 
     alert("Connexion réussie !");
 }
-
-
-
-// async function loginUser(event) {
-//     event.preventDefault();
-
-//     const email = document.getElementById("loginEmail").value.trim();
-//     const password = document.getElementById("loginPassword").value;
-
-//     if (!email ||!password) {
-//         alert("Veuillez saisir votre email et votre mot de passe.");
-//         return;
-//     }
-
-//     const {error} = await supabaseClient.auth.signInWithPassword({
-//                 email,
-//                 password
-//             });
-
-//     if (error) {
-//         console.error(error);
-//         alert("Connexion impossible :" +error.message );
-//         return;
-//     }
-//     await loadCurrentUser();
-//     alert("Connexion réussie !");
-// }
-
-// DECONNEXION
 
 async function logoutUser() {
     const {error} = await supabaseClient.auth.signOut();
