@@ -1,90 +1,1945 @@
 // =====================================================
-// CONNEXION
+// VARIABLES
 // =====================================================
 
-async function loginUser(event) {
-    event.preventDefault();
+let adminUser = null;
+let adminProfile = null;
 
-    const email = document.getElementById("loginEmail").value.trim();
-    const password = document.getElementById("loginPassword").value;
+let allReservations = [];
+let allUsers = [];
+let allActivities = [];
 
-    if (!email || !password) {
-        alert("Veuillez saisir votre email et votre mot de passe.");
-        return;
+
+// =====================================================
+// UTILITAIRES
+// =====================================================
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+function formatDate(dateString) {
+
+    if (!dateString) {
+        return "";
     }
 
-    // Connexion avec Supabase Auth
-    const { data, error } =
-        await supabaseClient.auth.signInWithPassword({
-            email,
-            password
-        });
+    const date = new Date(dateString + "T00:00:00");
 
-    if (error) {
-        console.error("Erreur de connexion :", error);
+    return date.toLocaleDateString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    });
+}
 
-        alert("Connexion impossible : " + error.message);
 
-        return;
-    }
+// =====================================================
+// VERIFICATION ADMIN
+// =====================================================
 
-    // Vérifier que Supabase nous a bien donné un utilisateur
-    if (!data || !data.user) {
-        alert("Impossible de récupérer l'utilisateur connecté.");
-        return;
-    }
+async function checkAdminAccess() {
 
-    // Utilisateur connecté
-    currentUser = data.user;
+    try {
 
-    console.log("Utilisateur connecté :", currentUser);
+        console.log("Vérification de l'utilisateur...");
 
-    // Récupérer son profil dans public.profiles
-    const { data: profile, error: profileError } =
-        await supabaseClient
+        const {
+            data,
+            error
+        } = await supabaseClient.auth.getUser();
+
+
+        if (error || !data.user) {
+
+            console.log("Aucun utilisateur connecté.");
+
+            window.location.href = "../index.html";
+
+            return false;
+        }
+
+
+        adminUser = data.user;
+
+        console.log("Utilisateur connecté :", adminUser);
+
+
+        // ---------------------------------------------
+        // Récupérer le profil
+        // ---------------------------------------------
+
+        const {
+            data: profile,
+            error: profileError
+        } = await supabaseClient
             .from("profiles")
-            .select("id, name, phone, role")
-            .eq("id", currentUser.id)
+            .select("id,name,phone,role")
+            .eq("id", adminUser.id)
             .maybeSingle();
 
-    if (profileError) {
+
+        if (profileError) {
+
+            console.error(
+                "Erreur récupération profil :",
+                profileError
+            );
+
+            alert(
+                "Erreur récupération profil : " +
+                profileError.message
+            );
+
+            return false;
+        }
+
+
+        if (!profile) {
+
+            alert("Votre profil est introuvable.");
+
+            window.location.href = "../index.html";
+
+            return false;
+        }
+
+
+        adminProfile = profile;
+
+
+        console.log("Profil :", adminProfile);
+        console.log("Rôle :", adminProfile.role);
+
+
+        // ---------------------------------------------
+        // Vérification rôle
+        // ---------------------------------------------
+
+        if (adminProfile.role !== "admin") {
+
+            alert(
+                "Accès refusé. Cette page est réservée à l'administrateur."
+            );
+
+            window.location.href = "../index.html";
+
+            return false;
+        }
+
+
+        // ---------------------------------------------
+        // Afficher informations admin
+        // ---------------------------------------------
+
+        const adminName =
+            document.getElementById("adminName");
+
+        const adminEmail =
+            document.getElementById("adminEmail");
+
+
+        if (adminName) {
+
+            adminName.textContent =
+                adminProfile.name ||
+                adminUser.email ||
+                "Administrateur";
+        }
+
+
+        if (adminEmail) {
+
+            adminEmail.textContent =
+                adminUser.email || "";
+        }
+
+
+        // ---------------------------------------------
+        // Afficher application
+        // ---------------------------------------------
+
+        const loadingScreen =
+            document.getElementById("loadingScreen");
+
+        const adminApp =
+            document.getElementById("adminApp");
+
+
+        if (loadingScreen) {
+            loadingScreen.classList.add("hidden");
+        }
+
+
+        if (adminApp) {
+            adminApp.classList.remove("hidden");
+        }
+
+
+        console.log("ACCÈS ADMIN AUTORISÉ");
+
+        return true;
+
+    } catch (error) {
+
         console.error(
-            "Erreur récupération profil :",
-            profileError
+            "Erreur vérification admin :",
+            error
         );
 
-        alert("Impossible de récupérer votre profil.");
+        alert("Erreur : " + error.message);
 
-        return;
+        return false;
     }
-
-    if (!profile) {
-        alert("Votre profil est introuvable.");
-
-        return;
-    }
-
-    console.log("Profil utilisateur :", profile);
-    console.log("Rôle :", profile.role);
-
-    // ==========================================
-    // CAS ADMINISTRATEUR
-    // ==========================================
-
-    if (profile.role === "admin") {
-
-        alert("Connexion administrateur réussie !");
-
-        window.location.href = "admin.html";
-
-        return;
-    }
-
-    // ==========================================
-    // CAS UTILISATEUR NORMAL
-    // ==========================================
-
-    await loadCurrentUser();
-
-    alert("Connexion réussie !");
 }
+
+
+// =====================================================
+// NAVIGATION
+// =====================================================
+
+function showSection(sectionName) {
+
+    document
+        .querySelectorAll(".admin-section")
+        .forEach(section => {
+
+            section.classList.add("hidden");
+
+        });
+
+
+    const section =
+        document.getElementById(
+            `section-${sectionName}`
+        );
+
+
+    if (section) {
+
+        section.classList.remove("hidden");
+    }
+
+
+    document
+        .querySelectorAll(".admin-menu")
+        .forEach(button => {
+
+            button.classList.remove(
+                "bg-white/10"
+            );
+
+        });
+
+
+    const activeButton =
+        document.querySelector(
+            `.admin-menu[data-section="${sectionName}"]`
+        );
+
+
+    if (activeButton) {
+
+        activeButton.classList.add(
+            "bg-white/10"
+        );
+    }
+
+
+    const titles = {
+
+        dashboard: "Tableau de bord",
+
+        reservations: "Réservations",
+
+        users: "Membres",
+
+        activities: "Activités"
+
+    };
+
+
+    const pageTitle =
+        document.getElementById("pageTitle");
+
+
+    if (pageTitle) {
+
+        pageTitle.textContent =
+            titles[sectionName] ||
+            "Administration";
+    }
+
+
+    if (sectionName === "reservations") {
+        loadReservations();
+    }
+
+
+    if (sectionName === "users") {
+        loadUsers();
+    }
+
+
+    if (sectionName === "activities") {
+        loadActivities();
+    }
+
+
+    closeMobileSidebar();
+}
+
+
+// =====================================================
+// ACTIVITES
+// =====================================================
+
+async function loadActivities() {
+
+    const grid =
+        document.getElementById("activitiesGrid");
+
+
+    if (!grid) {
+        return;
+    }
+
+
+    grid.innerHTML = `
+        <div class="col-span-full text-center py-10">
+            <div class="w-10 h-10 border-4 border-slate-200
+                        border-t-purple-600 rounded-full
+                        animate-spin mx-auto"></div>
+
+            <p class="text-slate-500 mt-3">
+                Chargement des activités...
+            </p>
+        </div>
+    `;
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("activities")
+        .select(
+            "id,name,category,description,icon,color,created_at"
+        )
+        .order("created_at", {
+            ascending: true
+        });
+
+
+    if (error) {
+
+        console.error(
+            "Erreur activités :",
+            error
+        );
+
+
+        grid.innerHTML = `
+            <div class="col-span-full
+                        text-center py-10
+                        text-red-500">
+
+                Impossible de récupérer
+                les activités.
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    allActivities = data || [];
+
+    renderActivities(allActivities);
+
+    updateDashboardStats();
+}
+
+
+// =====================================================
+// AFFICHER ACTIVITES
+// =====================================================
+
+function renderActivities(activitiesList) {
+
+    const grid =
+        document.getElementById("activitiesGrid");
+
+
+    if (!grid) {
+        return;
+    }
+
+
+    if (!activitiesList.length) {
+
+        grid.innerHTML = `
+            <div class="col-span-full
+                        bg-white rounded-2xl
+                        p-10 text-center">
+
+                <i class="bi bi-grid text-4xl
+                         text-slate-300"></i>
+
+                <p class="text-slate-500 mt-3">
+                    Aucune activité.
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    grid.innerHTML = activitiesList
+        .map(activity => {
+
+            const color =
+                getActivityColor(
+                    activity.color
+                );
+
+
+            return `
+                <div
+                    class="bg-white rounded-2xl
+                           overflow-hidden
+                           border border-slate-200
+                           shadow-sm"
+                >
+
+                    <!-- Aperçu couleur -->
+
+                    <div
+                        class="${color}
+                               h-32 p-5
+                               text-white"
+                    >
+
+                        <div
+                            class="w-12 h-12
+                                   rounded-xl
+                                   bg-white/20
+                                   flex items-center
+                                   justify-center"
+                        >
+
+                            <i
+                                class="bi ${escapeHtml(activity.icon)}
+                                       text-2xl"
+                            ></i>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Informations -->
+
+                    <div class="p-5">
+
+                        <span
+                            class="inline-block
+                                   px-3 py-1
+                                   rounded-full
+                                   bg-slate-100
+                                   text-xs font-bold"
+                        >
+                            ${escapeHtml(activity.category)}
+                        </span>
+
+
+                        <h3
+                            class="font-black text-xl mt-3"
+                        >
+                            ${escapeHtml(activity.name)}
+                        </h3>
+
+
+                        <p
+                            class="text-slate-500
+                                   text-sm mt-2
+                                   min-h-[40px]"
+                        >
+                            ${escapeHtml(
+                                activity.description
+                            )}
+                        </p>
+
+
+                        <!-- Actions -->
+
+                        <div
+                            class="flex gap-2 mt-5"
+                        >
+
+                            <button
+                                class="edit-activity flex-1
+                                       px-3 py-2
+                                       rounded-xl
+                                       bg-slate-100
+                                       hover:bg-slate-200
+                                       font-bold text-sm"
+                                data-id="${activity.id}"
+                            >
+                                <i class="bi bi-pencil"></i>
+                                Modifier
+                            </button>
+
+
+                            <button
+                                class="delete-activity
+                                       px-3 py-2
+                                       rounded-xl
+                                       bg-red-50
+                                       text-red-600
+                                       hover:bg-red-100"
+                                data-id="${activity.id}"
+                            >
+                                <i class="bi bi-trash"></i>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            `;
+
+        })
+        .join("");
+
+
+    // ---------------------------------------------
+    // Boutons modifier
+    // ---------------------------------------------
+
+    document
+        .querySelectorAll(".edit-activity")
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const id =
+                        Number(button.dataset.id);
+
+                    openEditActivity(id);
+                }
+            );
+
+        });
+
+
+    // ---------------------------------------------
+    // Boutons supprimer
+    // ---------------------------------------------
+
+    document
+        .querySelectorAll(".delete-activity")
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const id =
+                        Number(button.dataset.id);
+
+                    deleteActivity(id);
+                }
+            );
+
+        });
+}
+
+
+// =====================================================
+// COULEURS AUTORISEES
+// =====================================================
+
+function getActivityColor(color) {
+
+    const allowedColors = {
+
+        "bg-gradient-to-br from-orange-500 to-red-500":
+            "bg-gradient-to-br from-orange-500 to-red-500",
+
+        "bg-gradient-to-br from-blue-500 to-cyan-500":
+            "bg-gradient-to-br from-blue-500 to-cyan-500",
+
+        "bg-gradient-to-br from-green-500 to-emerald-500":
+            "bg-gradient-to-br from-green-500 to-emerald-500",
+
+        "bg-gradient-to-br from-purple-500 to-pink-500":
+            "bg-gradient-to-br from-purple-500 to-pink-500",
+
+        "bg-gradient-to-br from-indigo-500 to-blue-500":
+            "bg-gradient-to-br from-indigo-500 to-blue-500",
+
+        "bg-gradient-to-br from-yellow-500 to-orange-500":
+            "bg-gradient-to-br from-yellow-500 to-orange-500"
+
+    };
+
+
+    return allowedColors[color]
+        || "bg-gradient-to-br from-blue-500 to-cyan-500";
+}
+
+
+// =====================================================
+// AJOUTER ACTIVITE
+// =====================================================
+
+function openAddActivity() {
+
+    document
+        .getElementById("activityForm")
+        .reset();
+
+
+    document
+        .getElementById("activityId")
+        .value = "";
+
+
+    document
+        .getElementById("activityModalTitle")
+        .textContent =
+        "Ajouter une activité";
+
+
+    document
+        .getElementById("activityModal")
+        .classList.remove("hidden");
+}
+
+
+// =====================================================
+// MODIFIER ACTIVITE
+// =====================================================
+
+function openEditActivity(id) {
+
+    const activity =
+        allActivities.find(
+            item => Number(item.id) === Number(id)
+        );
+
+
+    if (!activity) {
+
+        alert("Activité introuvable.");
+
+        return;
+    }
+
+
+    document
+        .getElementById("activityId")
+        .value = activity.id;
+
+
+    document
+        .getElementById("activityName")
+        .value = activity.name || "";
+
+
+    document
+        .getElementById("activityCategory")
+        .value = activity.category || "";
+
+
+    document
+        .getElementById("activityDescription")
+        .value =
+        activity.description || "";
+
+
+    document
+        .getElementById("activityIcon")
+        .value =
+        activity.icon || "bi-calendar-event";
+
+
+    document
+        .getElementById("activityColor")
+        .value =
+        getActivityColor(activity.color);
+
+
+    document
+        .getElementById("activityModalTitle")
+        .textContent =
+        "Modifier l'activité";
+
+
+    document
+        .getElementById("activityModal")
+        .classList.remove("hidden");
+}
+
+
+// =====================================================
+// FERMER MODAL
+// =====================================================
+
+function closeActivityModal() {
+
+    document
+        .getElementById("activityModal")
+        .classList.add("hidden");
+}
+
+
+// =====================================================
+// ENREGISTRER ACTIVITE
+// =====================================================
+
+async function saveActivity(event) {
+
+    event.preventDefault();
+
+
+    const id =
+        document
+            .getElementById("activityId")
+            .value;
+
+
+    const name =
+        document
+            .getElementById("activityName")
+            .value
+            .trim();
+
+
+    const category =
+        document
+            .getElementById("activityCategory")
+            .value
+            .trim();
+
+
+    const description =
+        document
+            .getElementById("activityDescription")
+            .value
+            .trim();
+
+
+    const icon =
+        document
+            .getElementById("activityIcon")
+            .value;
+
+
+    const color =
+        getActivityColor(
+            document
+                .getElementById("activityColor")
+                .value
+        );
+
+
+    if (!name || !category) {
+
+        alert(
+            "Veuillez remplir le nom et la catégorie."
+        );
+
+        return;
+    }
+
+
+    const saveButton =
+        document
+            .getElementById("saveActivityButton");
+
+
+    saveButton.disabled = true;
+
+    saveButton.textContent =
+        "Enregistrement...";
+
+
+    try {
+
+        // ---------------------------------------------
+        // MODIFICATION
+        // ---------------------------------------------
+
+        if (id) {
+
+            const {
+                error
+            } = await supabaseClient
+                .from("activities")
+                .update({
+                    name,
+                    category,
+                    description,
+                    icon,
+                    color,
+                    updated_at:
+                        new Date().toISOString()
+                })
+                .eq("id", Number(id));
+
+
+            if (error) {
+                throw error;
+            }
+
+
+            alert(
+                "Activité modifiée avec succès !"
+            );
+
+        }
+
+        // ---------------------------------------------
+        // AJOUT
+        // ---------------------------------------------
+
+        else {
+
+            const {
+                error
+            } = await supabaseClient
+                .from("activities")
+                .insert({
+                    name,
+                    category,
+                    description,
+                    icon,
+                    color
+                });
+
+
+            if (error) {
+                throw error;
+            }
+
+
+            alert(
+                "Activité ajoutée avec succès !"
+            );
+        }
+
+
+        closeActivityModal();
+
+        await loadActivities();
+
+        await updateDashboardStats();
+
+
+    } catch (error) {
+
+        console.error(
+            "Erreur enregistrement activité :",
+            error
+        );
+
+
+        alert(
+            "Impossible d'enregistrer l'activité :\n" +
+            error.message
+        );
+
+    } finally {
+
+        saveButton.disabled = false;
+
+        saveButton.textContent =
+            "Enregistrer";
+    }
+}
+
+
+// =====================================================
+// SUPPRIMER ACTIVITE
+// =====================================================
+
+async function deleteActivity(id) {
+
+    const activity =
+        allActivities.find(
+            item => Number(item.id) === Number(id)
+        );
+
+
+    if (!activity) {
+        return;
+    }
+
+
+    const confirmation =
+        confirm(
+            `Voulez-vous vraiment supprimer "${activity.name}" ?`
+        );
+
+
+    if (!confirmation) {
+        return;
+    }
+
+
+    try {
+
+        const {
+            error
+        } = await supabaseClient
+            .from("activities")
+            .delete()
+            .eq("id", Number(id));
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        alert(
+            "Activité supprimée avec succès !"
+        );
+
+
+        await loadActivities();
+
+        await updateDashboardStats();
+
+
+    } catch (error) {
+
+        console.error(
+            "Erreur suppression activité :",
+            error
+        );
+
+
+        alert(
+            "Impossible de supprimer l'activité :\n" +
+            error.message
+        );
+    }
+}
+
+
+// =====================================================
+// RESERVATIONS
+// =====================================================
+
+async function loadReservations() {
+
+    const table =
+        document.getElementById(
+            "reservationsTable"
+        );
+
+
+    if (!table) {
+        return;
+    }
+
+
+    table.innerHTML = `
+        <tr>
+            <td
+                colspan="5"
+                class="text-center py-10 text-slate-400"
+            >
+                Chargement...
+            </td>
+        </tr>
+    `;
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("reservations")
+        .select(
+            "id,user_id,activity,date,time,is_started,created_at"
+        )
+        .order("date", {
+            ascending: true
+        })
+        .order("time", {
+            ascending: true
+        });
+
+
+    if (error) {
+
+        console.error(
+            "Erreur réservations :",
+            error
+        );
+
+
+        table.innerHTML = `
+            <tr>
+                <td
+                    colspan="5"
+                    class="text-center py-10 text-red-500"
+                >
+                    Impossible de récupérer
+                    les réservations.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    allReservations = data || [];
+
+    renderReservations(allReservations);
+
+    updateDashboardStats();
+}
+
+
+// =====================================================
+// AFFICHER RESERVATIONS
+// =====================================================
+
+function renderReservations(reservations) {
+
+    const table =
+        document.getElementById(
+            "reservationsTable"
+        );
+
+
+    if (!table) {
+        return;
+    }
+
+
+    if (!reservations.length) {
+
+        table.innerHTML = `
+            <tr>
+                <td
+                    colspan="5"
+                    class="text-center py-10 text-slate-400"
+                >
+                    Aucune réservation.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    table.innerHTML =
+        reservations
+            .map(reservation => {
+
+                const started =
+                    reservation.is_started === true;
+
+
+                return `
+                    <tr
+                        class="border-t border-slate-100
+                               hover:bg-slate-50"
+                    >
+
+                        <td class="px-5 py-4">
+                            <p class="font-semibold">
+                                ${escapeHtml(
+                                    reservation.activity
+                                )}
+                            </p>
+                        </td>
+
+
+                        <td class="px-5 py-4 text-sm">
+                            ${escapeHtml(
+                                formatDate(
+                                    reservation.date
+                                )
+                            )}
+                        </td>
+
+
+                        <td class="px-5 py-4 text-sm">
+                            ${escapeHtml(
+                                String(
+                                    reservation.time || ""
+                                ).slice(0, 5)
+                            )}
+                        </td>
+
+
+                        <td class="px-5 py-4">
+
+                            ${
+                                started
+
+                                ? `
+                                    <span
+                                        class="inline-flex
+                                               px-3 py-1
+                                               rounded-full
+                                               bg-green-100
+                                               text-green-700
+                                               text-xs font-bold"
+                                    >
+                                        En cours
+                                    </span>
+                                `
+
+                                : `
+                                    <span
+                                        class="inline-flex
+                                               px-3 py-1
+                                               rounded-full
+                                               bg-slate-100
+                                               text-slate-600
+                                               text-xs font-bold"
+                                    >
+                                        Réservée
+                                    </span>
+                                `
+                            }
+
+                        </td>
+
+
+                        <td
+                            class="px-5 py-4 text-xs
+                                   text-slate-400"
+                        >
+                            ${escapeHtml(
+                                reservation.user_id
+                            )}
+                        </td>
+
+                    </tr>
+                `;
+
+            })
+            .join("");
+}
+
+
+// =====================================================
+// RECHERCHE RESERVATIONS
+// =====================================================
+
+function searchReservations(value) {
+
+    const search =
+        value
+            .trim()
+            .toLowerCase();
+
+
+    if (!search) {
+
+        renderReservations(
+            allReservations
+        );
+
+        return;
+    }
+
+
+    const filtered =
+        allReservations.filter(
+            reservation =>
+                String(
+                    reservation.activity || ""
+                )
+                .toLowerCase()
+                .includes(search)
+        );
+
+
+    renderReservations(filtered);
+}
+
+
+// =====================================================
+// USERS
+// =====================================================
+
+async function loadUsers() {
+
+    const table =
+        document.getElementById(
+            "usersTable"
+        );
+
+
+    if (!table) {
+        return;
+    }
+
+
+    table.innerHTML = `
+        <tr>
+            <td
+                colspan="3"
+                class="text-center py-10 text-slate-400"
+            >
+                Chargement des membres...
+            </td>
+        </tr>
+    `;
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("profiles")
+        .select("id,name,phone,role")
+        .order("name", {
+            ascending: true
+        });
+
+
+    if (error) {
+
+        console.error(
+            "Erreur utilisateurs :",
+            error
+        );
+
+
+        table.innerHTML = `
+            <tr>
+                <td
+                    colspan="3"
+                    class="text-center py-10 text-red-500"
+                >
+                    Impossible de récupérer
+                    les membres.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    allUsers = data || [];
+
+    renderUsers(allUsers);
+
+    updateDashboardStats();
+}
+
+
+// =====================================================
+// AFFICHER USERS
+// =====================================================
+
+function renderUsers(users) {
+
+    const table =
+        document.getElementById(
+            "usersTable"
+        );
+
+
+    if (!table) {
+        return;
+    }
+
+
+    if (!users.length) {
+
+        table.innerHTML = `
+            <tr>
+                <td
+                    colspan="3"
+                    class="text-center py-10 text-slate-400"
+                >
+                    Aucun membre.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    table.innerHTML =
+        users
+            .map(user => {
+
+                return `
+                    <tr
+                        class="border-t
+                               border-slate-100
+                               hover:bg-slate-50"
+                    >
+
+                        <td class="px-5 py-4">
+
+                            <p class="font-semibold">
+                                ${escapeHtml(
+                                    user.name ||
+                                    "Sans nom"
+                                )}
+                            </p>
+
+                            <p
+                                class="text-xs
+                                       text-slate-400
+                                       mt-1"
+                            >
+                                ${escapeHtml(
+                                    user.id
+                                )}
+                            </p>
+
+                        </td>
+
+
+                        <td
+                            class="px-5 py-4 text-sm"
+                        >
+                            ${escapeHtml(
+                                user.phone || "-"
+                            )}
+                        </td>
+
+
+                        <td class="px-5 py-4">
+
+                            ${
+                                user.role === "admin"
+
+                                ? `
+                                    <span
+                                        class="px-3 py-1
+                                               rounded-full
+                                               bg-purple-100
+                                               text-purple-700
+                                               text-xs font-bold"
+                                    >
+                                        Administrateur
+                                    </span>
+                                `
+
+                                : `
+                                    <span
+                                        class="px-3 py-1
+                                               rounded-full
+                                               bg-slate-100
+                                               text-slate-600
+                                               text-xs font-bold"
+                                    >
+                                        Membre
+                                    </span>
+                                `
+                            }
+
+                        </td>
+
+                    </tr>
+                `;
+
+            })
+            .join("");
+}
+
+
+// =====================================================
+// RECHERCHE USERS
+// =====================================================
+
+function searchUsers(value) {
+
+    const search =
+        value
+            .trim()
+            .toLowerCase();
+
+
+    if (!search) {
+
+        renderUsers(allUsers);
+
+        return;
+    }
+
+
+    const filtered =
+        allUsers.filter(
+            user =>
+                String(
+                    user.name || ""
+                )
+                .toLowerCase()
+                .includes(search)
+
+                ||
+
+                String(
+                    user.phone || ""
+                )
+                .toLowerCase()
+                .includes(search)
+        );
+
+
+    renderUsers(filtered);
+}
+
+
+// =====================================================
+// RESERVATIONS RECENTES
+// =====================================================
+
+async function loadRecentReservations() {
+
+    const container =
+        document.getElementById(
+            "recentReservations"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("reservations")
+        .select(
+            "id,user_id,activity,date,time,is_started,created_at"
+        )
+        .order("created_at", {
+            ascending: false
+        })
+        .limit(5);
+
+
+    if (error) {
+
+        console.error(
+            "Erreur réservations récentes :",
+            error
+        );
+
+
+        container.innerHTML = `
+            <p class="text-center
+                      text-red-500 py-5">
+                Impossible de récupérer
+                les réservations.
+            </p>
+        `;
+
+        return;
+    }
+
+
+    if (!data || data.length === 0) {
+
+        container.innerHTML = `
+            <p class="text-center
+                      text-slate-400 py-8">
+                Aucune réservation pour le moment.
+            </p>
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML =
+        data
+            .map(reservation => {
+
+                return `
+                    <div
+                        class="flex flex-col
+                               sm:flex-row
+                               sm:items-center
+                               justify-between
+                               gap-3 py-4
+                               border-b
+                               border-slate-100"
+                    >
+
+                        <div>
+
+                            <p class="font-bold">
+                                ${escapeHtml(
+                                    reservation.activity
+                                )}
+                            </p>
+
+                            <p
+                                class="text-sm
+                                       text-slate-500
+                                       mt-1"
+                            >
+                                ${escapeHtml(
+                                    formatDate(
+                                        reservation.date
+                                    )
+                                )}
+                                •
+                                ${escapeHtml(
+                                    String(
+                                        reservation.time || ""
+                                    ).slice(0, 5)
+                                )}
+                            </p>
+
+                        </div>
+
+
+                        ${
+                            reservation.is_started
+
+                            ? `
+                                <span
+                                    class="px-3 py-1
+                                           rounded-full
+                                           bg-green-100
+                                           text-green-700
+                                           text-xs font-bold"
+                                >
+                                    En cours
+                                </span>
+                            `
+
+                            : `
+                                <span
+                                    class="px-3 py-1
+                                           rounded-full
+                                           bg-slate-100
+                                           text-slate-600
+                                           text-xs font-bold"
+                                >
+                                    Réservée
+                                </span>
+                            `
+                        }
+
+                    </div>
+                `;
+
+            })
+            .join("");
+}
+
+
+// =====================================================
+// STATISTIQUES
+// =====================================================
+
+async function updateDashboardStats() {
+
+    const {
+        count: usersCount
+    } = await supabaseClient
+        .from("profiles")
+        .select("id", {
+            count: "exact",
+            head: true
+        });
+
+
+    const {
+        count: reservationsCount
+    } = await supabaseClient
+        .from("reservations")
+        .select("id", {
+            count: "exact",
+            head: true
+        });
+
+
+    const {
+        count: startedCount
+    } = await supabaseClient
+        .from("reservations")
+        .select("id", {
+            count: "exact",
+            head: true
+        })
+        .eq("is_started", true);
+
+
+    const usersElement =
+        document.getElementById(
+            "dashboardUsersCount"
+        );
+
+
+    const reservationsElement =
+        document.getElementById(
+            "dashboardReservationsCount"
+        );
+
+
+    const activitiesElement =
+        document.getElementById(
+            "dashboardActivitiesCount"
+        );
+
+
+    const startedElement =
+        document.getElementById(
+            "dashboardStartedCount"
+        );
+
+
+    if (usersElement) {
+
+        usersElement.textContent =
+            usersCount ?? 0;
+    }
+
+
+    if (reservationsElement) {
+
+        reservationsElement.textContent =
+            reservationsCount ?? 0;
+    }
+
+
+    if (activitiesElement) {
+
+        activitiesElement.textContent =
+            allActivities.length;
+    }
+
+
+    if (startedElement) {
+
+        startedElement.textContent =
+            startedCount ?? 0;
+    }
+}
+
+
+// =====================================================
+// SIDEBAR MOBILE
+// =====================================================
+
+function openMobileSidebar() {
+
+    const sidebar =
+        document.getElementById(
+            "sidebar"
+        );
+
+
+    const overlay =
+        document.getElementById(
+            "sidebarOverlay"
+        );
+
+
+    sidebar?.classList.remove(
+        "-translate-x-full"
+    );
+
+
+    overlay?.classList.remove(
+        "hidden"
+    );
+}
+
+
+function closeMobileSidebar() {
+
+    const sidebar =
+        document.getElementById(
+            "sidebar"
+        );
+
+
+    const overlay =
+        document.getElementById(
+            "sidebarOverlay"
+        );
+
+
+    if (window.innerWidth < 1024) {
+
+        sidebar?.classList.add(
+            "-translate-x-full"
+        );
+
+
+        overlay?.classList.add(
+            "hidden"
+        );
+    }
+}
+
+
+// =====================================================
+// DECONNEXION
+// =====================================================
+
+async function logoutAdmin() {
+
+    const {
+        error
+    } = await supabaseClient.auth.signOut();
+
+
+    if (error) {
+
+        console.error(
+            "Erreur déconnexion :",
+            error
+        );
+
+
+        alert(
+            "Erreur lors de la déconnexion."
+        );
+
+        return;
+    }
+
+
+    window.location.href =
+        "../index.html";
+}
+
+
+// =====================================================
+// INITIALISATION
+// =====================================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
+
+        const isAdmin =
+            await checkAdminAccess();
+
+
+        if (!isAdmin) {
+            return;
+        }
+
+
+        // ---------------------------------------------
+        // Menu
+        // ---------------------------------------------
+
+        document
+            .querySelectorAll(".admin-menu")
+            .forEach(button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        showSection(
+                            button.dataset.section
+                        );
+
+                    }
+                );
+
+            });
+
+
+        // ---------------------------------------------
+        // Sidebar mobile
+        // ---------------------------------------------
+
+        document
+            .getElementById("menuButton")
+            ?.addEventListener(
+                "click",
+                openMobileSidebar
+            );
+
+
+        document
+            .getElementById("sidebarOverlay")
+            ?.addEventListener(
+                "click",
+                closeMobileSidebar
+            );
+
+
+        // ---------------------------------------------
+        // Déconnexion
+        // ---------------------------------------------
+
+        document
+            .getElementById("logoutButton")
+            ?.addEventListener(
+                "click",
+                logoutAdmin
+            );
+
+
+        // ---------------------------------------------
+        // Activités
+        // ---------------------------------------------
+
+        document
+            .getElementById(
+                "addActivityButton"
+            )
+            ?.addEventListener(
+                "click",
+                openAddActivity
+            );
+
+
+        document
+            .getElementById(
+                "closeActivityModal"
+            )
+            ?.addEventListener(
+                "click",
+                closeActivityModal
+            );
+
+
+        document
+            .getElementById(
+                "cancelActivityButton"
+            )
+            ?.addEventListener(
+                "click",
+                closeActivityModal
+            );
+
+
+        document
+            .getElementById(
+                "activityForm"
+            )
+            ?.addEventListener(
+                "submit",
+                saveActivity
+            );
+
+
+        // ---------------------------------------------
+        // Recherche
+        // ---------------------------------------------
+
+        document
+            .getElementById(
+                "reservationSearch"
+            )
+            ?.addEventListener(
+                "input",
+                event => {
+
+                    searchReservations(
+                        event.target.value
+                    );
+
+                }
+            );
+
+
+        document
+            .getElementById(
+                "userSearch"
+            )
+            ?.addEventListener(
+                "input",
+                event => {
+
+                    searchUsers(
+                        event.target.value
+                    );
+
+                }
+            );
+
+
+        // ---------------------------------------------
+        // Refresh
+        // ---------------------------------------------
+
+        document
+            .getElementById(
+                "refreshReservations"
+            )
+            ?.addEventListener(
+                "click",
+                async () => {
+
+                    await loadReservations();
+
+                    await loadRecentReservations();
+
+                    await updateDashboardStats();
+
+                }
+            );
+
+
+        // ---------------------------------------------
+        // Chargement initial
+        // ---------------------------------------------
+
+        await loadActivities();
+
+        await loadReservations();
+
+        await loadUsers();
+
+        await loadRecentReservations();
+
+        await updateDashboardStats();
+
+
+        // ---------------------------------------------
+        // Surveillance session
+        // ---------------------------------------------
+
+        supabaseClient.auth.onAuthStateChange(
+            async (_event, session) => {
+
+                if (!session?.user) {
+
+                    window.location.href =
+                        "../index.html";
+                }
+
+            }
+        );
+
+    }
+);

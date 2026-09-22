@@ -413,7 +413,22 @@ async function getMyProfile() {
     }
     return data;
 }
-
+async function loadActivitiesFromSupabase(){
+    try{
+        const{data,error} = await supabaseClient.from("activities").select("id, name, category, description, icon, active")
+        .eq("active",true).order("created_at",{ascending:true});
+        if(error){
+            console.error("Erreur lors du chargement des activités:",error);
+            return[];
+        }
+        console.log("Activités chargés:",data);
+        
+    }catch(error){
+        console.error("Erreur inattendue lors du chargement des activités:",error);
+        return[];
+        
+    }
+}
 // UTILISATEUR ACTUEL
 
 async function loadCurrentUser() {
@@ -434,6 +449,9 @@ async function loadCurrentUser() {
     hideAuth();
     return currentUser;
 }
+
+
+
 
 // OUVRIR RESERVATION
 

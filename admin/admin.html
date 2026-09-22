@@ -261,7 +261,7 @@
                              Ajouter une activité
                         </button>
                     </div>
-                    <div class="activitiesGrid" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+                    <div id="activitiesGrid" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-5"></div>
                 </section>
 
                 <!------ESPACES---->
@@ -289,6 +289,74 @@
             </main>
         </div>    
     </div>
-    
+    <div id="activityModal" class=" fixed inset-0 z-[100] bg-black/50 p-4 flex items-center justify-center">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between p-6 border-b border-slate-200">
+                <div>
+                    <h2 id="activityModalTitle" class="text-xl font-black">Ajouter une activité</h2>
+                    <p class="text-sm text-slate-500 mt-1">Remplisses les informations de l'activité.</p>
+                </div>
+                <button id="closeActivityModal" type="button" class="w-12 h-12 rounded-full hover:bg-slate-100 flex items-center justify-center">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <form id="activityForm" class="p-6 space-y-5">
+                <input type="hidden" id="activityId">
+                <div>
+                    <label for="activityName" class="block text-sm font-bold mb-2">Nom de l'activité</label>
+                    <input id="activityName" type="text" required placeholder="Ex: Tournoi FIFA" class="w-full px-4 py-3 rounded-xl 
+                            border border-slate-300 outline-none focus:ring-2 focus:ring-[#005383]">
+                </div>
+
+                <div>
+                    <label for="activityCategory" class="block text-sm font-bold mb-2">Catégorie</label>
+                    <input id="activityCategory" type="text" required placeholder="Ex:Créatif" class="w-full px-4 py-3 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-[#005383]">
+                </div>
+
+                <div>
+                    <label for="activityDescription" class="block text-sm font-bold mb-2">Description</label>
+                    <textarea id="activityDescription" rows="3" placeholder="Description de l'activité..."
+                                class="w-full px-4 py-3 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-[#005383]">
+                    </textarea>
+                </div>
+
+                <div>
+                    <label for="activityIcon" class="block text-sm font-bold mb-2">Icône</label>
+                    <select id="activityIcon" class="w-full px-4 py-3 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-[#005383]">
+                        <option value="bi-controller">Magnette</option>
+                        <option value="bi-dice-5">Jeux</option>
+                        <option value="bi-book">Livre</option>
+                        <option value="bi-palette">Palette</option>
+                        <option value="bi-display">Ordinateur</option>
+                        <option value="bi-puzzle">Puzzle</option>
+                        <option value="bi-music-note">Musique</option>
+                        <option value="bi-camera">Camera</option>
+                        <option value="bi-calendar-event">Événement</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="activityColor" class="block text-sm font-bold mb-2">Couleur</label>
+                    <select  id="activityColor" class="w-full px-4 py-3 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-[#005383]">
+                        <option value="bg-gradient-to-br from-orange-500 to-red-500">🟧Orange->rouge</option>
+                        <option value="bg-gradient-to-br from-blue-500 to-cyan-500">🟦Bleu->Cyan</option>
+                        <option value="bg-gradient-to-br from-green-500 to-emerald-500">🟩Vert->Émeraude</option>
+                        <option value="bg-gradient-to-br from-purple-500 to-pink-500">🟪Violet->Rose</option>
+                        <option value="bg-gradient-to-br from-indigo-500 to-blue-500">🔵Indigo->Bleu</option>
+                        <option value="bg-gradient-to-br from-yellow-500 to-orange-500">🟨Jaune->Orange</option>
+                        <option value="bg-gradient-to-br from-red-500 to-orange-500">🟥Rouge->white</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button id="cancelActivityButton" type="button" class="flex-1 px-4 py-3 rounded-xl bg-slate-100 font-bold hover:bg-slate-200">
+                        Annuler
+                    </button>
+                    <button id="saveActivityButton" type="submit" class="flex-1 px-4 py-3 rounded-xl bg-[#005383] text-white font-bold hover:bg-[#00446c]">
+                        Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
