@@ -272,7 +272,7 @@
             <button onclick="filterActivites('all',event)" class="filter-btn active px-5 py-2 rounded-full bg-[#005383] text-white">
                 Toutes
             </button>
-            <button onclick="filterActivites('jeu',event)" class="filter-btn active px-5 py-2 rounded-full bg-slate-100 hover:bg-slate-200">
+            <button onclick="filterActivites('jeux',event)" class="filter-btn active px-5 py-2 rounded-full bg-slate-100 hover:bg-slate-200">
                 Jeux
             </button>
             <button onclick="filterActivites('lecture',event)" class="filter-btn active px-5 py-2 rounded-full bg-slate-100 hover:bg-slate-200">
@@ -286,115 +286,11 @@
             </button>
          </div>
          <!-- ===========CARTES========== -->
-          <div id="activityGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
-            <!-- =====Act 1======= -->
-             <div class="activity-card" data-category="jeu">
-                <div class="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-3xl p-6 text-white">
-                    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
-                        <i class="bi bi-controller fs-3"></i>
-                    </div>
-                    <span class="text-sm bg-white/20 px-3 py-1 rounded-full">
-                        Jeux
-                    </span>
-                    <h3 class="text-2xl font-bold mt-4">
-                        PS5
-                    </h3>
-                    <p class="text-white/80 mt-2">2 scéances de 30 minutes par mois</p>
-                    <button onclick="openReservation('PS5')" class="mt-6 bg-white text-indigo-600 px-5 py-2.5 rounded-xl font-bold">
-                        Réserver
-                    </button>
-                </div>
-             </div>
-              <!-- =====Act 2========= -->
-             <div class="activity-card" data-category="jeu">
-                <div class="bg-gradient-to-br from-orange-500 to-red-500 rounded-3xl p-6 text-white">
-                    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
-                        <i class="bi bi-dice-5 fs-3"></i>
-                    </div>
-                    <span class="text-sm bg-white/20 px-3 py-1 rounded-full">
-                        Jeux
-                    </span>
-                    <h3 class="text-2xl font-bold mt-4">
-                        Jeux de société
-                    </h3>
-                    <p class="text-white/80 mt-2">Echecs, domino, katro et bien plus.</p>
-                    <button onclick="openReservation('Jeux de société')" class="mt-6 bg-white text-red-600 px-5 py-2.5 rounded-xl font-bold">
-                        Réserver
-                    </button>
-                </div>
-             </div>
-             <!-- ===============Act 3================= -->
-             <div class="activity-card" data-category="lecture">
-                <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl p-6 text-white">
-                    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
-                        <i class="bi bi-book fs-3"></i>
-                    </div>
-                    <span class="text-sm bg-white/20 px-3 py-1 rounded-full">
-                        Lecture
-                    </span>
-                    <h3 class="text-2xl font-bold mt-4">
-                        Coin lecture
-                    </h3>
-                    <p class="text-white/80 mt-2">Découvrez nos livres et choisissez votre lecture.</p>
-                    <button onclick="openReservation('Coin lecture')" class="mt-6 bg-white text-green-600 px-5 py-2.5 rounded-xl font-bold">
-                        Réserver
-                    </button>
-                </div>
-             </div>
-             <!-- ========Act 4=============== -->
-             <div class="activity-card" data-category="creatif">
-                <div class="bg-gradient-to-br from-pink-500 to-rose-600 rounded-3xl p-6 text-white">
-                    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
-                        <i class="bi bi-palette fs-3"></i>
-                    </div>
-                    <span class="text-sm bg-white/20 px-3 py-1 rounded-full">
-                        Créatif
-                    </span>
-                    <h3 class="text-2xl font-bold mt-4">
-                        Coloriage
-                    </h3>
-                    <p class="text-white/80 mt-2">Une activité créative pour petits et grands.</p>
-                    <button onclick="openReservation('Coloriage')" class="mt-6 bg-white text-rose-600 px-5 py-2.5 rounded-xl font-bold">
-                        Réserver
-                    </button>
-                </div>
-             </div>
-             <!-- ========Act 5========== -->
-             <div class="activity-card" data-category="numerique">
-                <div class="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-3xl p-6 text-white">
-                    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
-                        <i class="bi bi-display text-2xl"></i>
-                    </div>
-                    <span class="text-sm bg-white/20 px-3 py-1 rounded-full">
-                        Numérique
-                    </span>
-                    <h3 class="text-2xl font-bold mt-4">
-                        Espace numérique
-                    </h3>
-                    <p class="text-white/80 mt-2">Coworking Visio, réunion et impréssion.</p>
-                    <button onclick="openReservation('Espace numérique')" class="mt-6 bg-white text-blue-600 px-5 py-2.5 rounded-xl font-bold">
-                        Réserver
-                    </button>
-                </div>
-             </div>
-             <!-- ==========Act 6=========== -->
-             <div class="activity-card" data-category="creatif">
-                <div class="bg-gradient-to-br from-yellow-500 to-orange-500 rounded-3xl p-6 text-white">
-                    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
-                        <i class="bi bi-puzzle text-2xl"></i>
-                    </div>
-                    <span class="text-sm bg-white/20 px-3 py-1 rounded-full">
-                        Créatif
-                    </span>
-                    <h3 class="text-2xl font-bold mt-4">
-                        Puzzle
-                    </h3>
-                    <p class="text-white/80 mt-2">Une animation permanente accessible aux membres.</p>
-                    <button onclick="openReservation('Puzzle')" class="mt-6 bg-white text-orange-600 px-5 py-2.5 rounded-xl font-bold">
-                        Réserver
-                    </button>
-                </div>
-             </div>
+          <div id="activitiesContainer" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+            <div class="col-span-full text-center py-10">
+                <div class="w-10 h-10 border-4 border-slate-200 border-t-[#005383] rounded-full animate-spin mx-auto"></div>
+                <p class="text-slate-500 mt-3">Cargement des activités...</p>
+            </div>
           </div>
     </div>
  </section>

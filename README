@@ -1,305 +1,102 @@
-function renderPublicActivities(activities) {
+async function toggleReservationValidation(
+    reservationId,
+    validated
+) {
 
-    const container =
-        document.getElementById("activitiesContainer");
+    try {
 
-    if (!container) {
-        return;
+        const { error } = await supabaseClient
+            .from("reservations")
+            .update({
+                validated: validated
+            })
+            .eq("id", reservationId);
+
+        if (error) {
+            throw error;
+        }
+
+        console.log(
+            validated
+                ? "Réservation validée."
+                : "Validation retirée."
+        );
+
+        /*
+        Recharger les réservations
+        */
+
+        await loadReservations();
+
+    } catch (error) {
+
+        console.error(
+            "Erreur validation réservation :",
+            error
+        );
+
+        alert(
+            "Impossible de modifier la validation de la réservation."
+        );
+
     }
-
-    container.innerHTML = activities.map(activity => {
-
-        const color =
-            activity.color ||
-            "bg-gradient-to-br from-blue-500 to-cyan-500";
-
-        const icon =
-            activity.icon ||
-            "bi-calendar-event";
-
-        return `
-            <div
-                class="activity-card bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition"
-                data-category="${escapeHtml(activity.category)}">
-
-                <!-- COULEUR -->
-                <div
-                    class="${escapeHtml(color)}
-                    h-36 p-6 text-white">
-
-                    <div
-                        class="w-14 h-14 rounded-xl bg-white/20
-                        flex items-center justify-center">
-
-                        <i
-                            class="bi ${escapeHtml(icon)} text-3xl">
-                        </i>
-
-                    </div>
-
-                </div>
-
-                <!-- CONTENU -->
-                <div class="p-6">
-
-                    <span
-                        class="inline-block px-3 py-1 rounded-full
-                        bg-slate-100 text-slate-600
-                        text-xs font-bold">
-
-                        ${escapeHtml(activity.category)}
-
-                    </span>
-
-                    <h3
-                        class="font-black text-xl mt-3 text-slate-800">
-
-                        ${escapeHtml(activity.name)}
-
-                    </h3>
-
-                    <p
-                        class="text-slate-500 text-sm mt-2 min-h-[40px]">
-
-                        ${escapeHtml(
-                            activity.description || ""
-                        )}
-
-                    </p>
-
-                    <button
-                        type="button"
-                        class="w-full mt-5 px-4 py-3
-                        bg-[#005383] hover:bg-[#00446c]
-                        text-white rounded-xl
-                        font-bold transition"
-                        onclick="openReservation('${escapeHtml(activity.name)}')">
-
-                        <i class="bi bi-calendar-check mr-2"></i>
-
-                        Réserver
-
-                    </button>
-
-                </div>
-
-            </div>
-        `;
-
-    }).join("");
 }
 
 
 
+Ajouter la suppression
 
-7. Charger les activités quand index.html démarre
 
-Dans ton DOMContentLoaded, tu as actuellement :
+async function deleteReservation(reservationId) {
 
-document.addEventListener("DOMContentLoaded", async () => {
+    const confirmation = confirm(
+        "Voulez-vous vraiment supprimer cette réservation terminée ?"
+    );
 
-    initMobileMenu();
-    initCalendarButtons();
-
-    ...
-    
-    await loadCurrentUser();
-});
-
-Ajoute :
-
-await loadPublicActivities();
-
-Par exemple :
-
-document.addEventListener("DOMContentLoaded", async () => {
-
-    initMobileMenu();
-    initCalendarButtons();
-
-    if (registerForm) {
-        registerForm.addEventListener("submit", registerUser);
+    if (!confirmation) {
+        return;
     }
 
-    if (loginForm) {
-        loginForm.addEventListener("submit", loginUser);
-    }
+    try {
 
-    if (switchAuth) {
-        switchAuth.addEventListener("click", () => {
+        const { error } = await supabaseClient
+            .from("reservations")
+            .delete()
+            .eq("id", reservationId);
 
-            const registerVisible =
-                !registerForm.classList.contains("hidden");
+        if (error) {
+            throw error;
+        }
 
-            if (registerVisible) {
-                showLoginMode();
-            } else {
-                showRegisterMode();
-            }
-        });
-    }
-
-    if (forgotPasswordButton) {
-        forgotPasswordButton.addEventListener(
-            "click",
-            resetPassword
-        );
-    }
-
-    document
-        .getElementById("logoutBtn")
-        ?.addEventListener(
-            "click",
-            logoutUser
+        console.log(
+            "Réservation supprimée :",
+            reservationId
         );
 
-    document
-        .getElementById("reservationForm")
-        ?.addEventListener(
-            "submit",
-            handleReservationSubmit
+        await loadReservations();
+
+    } catch (error) {
+
+        console.error(
+            "Erreur suppression réservation :",
+            error
         );
 
-    // Charger les activités depuis Supabase
-    await loadPublicActivities();
+        alert(
+            "Impossible de supprimer cette réservation."
+        );
+    }
+}
 
-    // Vérifier l'utilisateur connecté
-    await loadCurrentUser();
 
-});
-8. Attention à ton système de filtres
+const { data, error } = await supabaseClient
+    .from("reservations")
+    .select("*")
+    .eq("user_id", currentUser.id);
 
-Il y a un point important.
 
-Dans ton ancien index.html, tes boutons utilisent probablement :
-
-<button onclick="filterActivites('jeu', event)">
-    Jeux
-</button>
-
-<button onclick="filterActivites('lecture', event)">
-    Lecture
-</button>
-
-<button onclick="filterActivites('numerique', event)">
-    Numérique
-</button>
-
-<button onclick="filterActivites('creatif', event)">
-    Créatif
-</button>
-
-Ton ancienne fonction cherche :
-
-const cardCategory = card.dataset.category;
-
-et compare :
-
-cardCategory === category
-
-Donc si l'administrateur écrit :
-
-Numérique
-
-dans Supabase, mais que le filtre cherche :
-
-numerique
-
-ça ne correspondra pas.
-
-Il faut donc modifier renderPublicActivities() :
-
-Au lieu de :
-
-data-category="${escapeHtml(activity.category)}"
-
-utilise :
-
-data-category="${escapeHtml(
-    String(activity.category || "")
-        .trim()
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-)}"
-
-Ainsi :
-
-Numérique
-
-devient :
-
-numerique
-
-et :
-
-Créatif
-
-devient :
-
-creatif
-
-Cela permet à tes filtres actuels de continuer à fonctionner.
-
-9. Il faut aussi corriger getActivityColor() dans admin.js
-
-Tu as :
-
-"bg-gradient-to-br from-blue-500 to-cyan-500"
-
-mais ton HTML avait :
-
-from-blue-500  to-cyan-500
-
-Une différence d'espace peut empêcher la correspondance exacte.
-
-Avec la correction du HTML donnée plus haut, ce problème disparaît.
-
-10. Il y a aussi une erreur d
-
-Dans admin.html, tu as :
-
-<button data-section="users" class="admin-menu ...">
-    <i class="bi bi-building text-lg"></i>
-    <span>Espaces</span>
-</button>
-
-Tu utilises :
-
-data-section="users"
-
-alors que tu veux :
-
-data-section="spaces"
-
-Corrige :
-
-<button
-    data-section="spaces"
-    class="admin-menu w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left hover:bg-white/10 transition">
-
-    <i class="bi bi-building text-lg"></i>
-
-    <span>
-        Espaces
-    </span>
-
-</button>
-
-Et ton admin.js contient déjà :
-
-spaces: "Espaces"
-
-donc cette correction est cohérente.
-
-11. Une autre petite erreur HTML
-
-Tu as :
-
-<div mb-3 px-3>
-
-Il manque class.
-
-Il faut :
-
-<div class="mb-3 px-3">
+    const { data, error } = await supabaseClient
+    .from("reservations")
+    .select("*")
+    .eq("user_id", currentUser.id)
+    .eq("validated", true);

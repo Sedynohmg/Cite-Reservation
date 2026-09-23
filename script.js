@@ -101,19 +101,29 @@ function renderPublicActivities(activities){
         const icon = activity.icon || "bi bi-calendar-event";
         return `
         <div class = "activity-card bg-white rounded-2xl overflow-hidden border-slate-200 shadow-sm hover:shadow-lg transition"
-                data-category = "${escapeHtml(activity.category)}">
+                data-category = "${escapeHtml(String(activity.category || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))}">
             <div class = "${escapeHtml(color)} h-36 p-6 text-white">   
                 <div class = "w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
                     <i class ="bi ${escapeHtml(icon)} text-3xl"></i>
                 </div>
             </div>
 
-
-
-            
+            <div class = "p-6">
+                <span class = "inline-block px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold">
+                    ${escapeHtml(activity.category)}
+                </span>
+                <h3 class = "font-black text-xl mt-3 text-slate-800">
+                    ${escapeHtml(activity.name)}
+                </h3>
+                <p class = "text-slate-500 text-sm mt-2 min-h-[40px]">${escapeHtml(activity.description || "")}</p>
+                <button type="button" class = "w-full mt-5 px-4 py-3 bg-[#005383] hover:bg-[#00446c] text-white rounded-xl font-bold transition" onclick="openReservation('${escapeHtml(activity.name)}')">
+                    <i class = "bi bi-calendar-check mr-2"></i>
+                    Réserver
+                </button>
+            </div>
         </div>
-        `
-    })
+        `;
+    }).join("")
 }
 
 
@@ -1612,133 +1622,52 @@ async function renderActivities() {
 
 }
 
-
-// =====================================================
-// TOUCHE ESCAPE
-// =====================================================
-
-document.addEventListener(
-    "keydown",
-    event => {
-
-        if (
-            event.key ===
-            "Escape"
-        ) {
-
+document.addEventListener("keydown", event => {
+        if ( event.key === "Escape") {
             closeReservation();
-
             closeActivities();
-
         }
 
     }
 );
 
 
-// =====================================================
 // INITIALISATION
-// =====================================================
 
-document.addEventListener(
-    "DOMContentLoaded",
-    async () => {
 
+document.addEventListener("DOMContentLoaded",async () => {
         initMobileMenu();
-
         initCalendarButtons();
 
-
-        // -----------------------------
         // INSCRIPTION
-        // -----------------------------
 
-        if (
-            registerForm
-        ) {
-
-            registerForm
-                .addEventListener(
-                    "submit",
-                    registerUser
-                );
-
+        if ( registerForm ) {
+            registerForm.addEventListener( "submit",registerUser );
         }
 
-
-        // -----------------------------
         // CONNEXION
-        // -----------------------------
 
-        if (
-            loginForm
-        ) {
-
-            loginForm
-                .addEventListener(
-                    "submit",
-                    loginUser
-                );
-
+        if ( loginForm) {
+            loginForm.addEventListener("submit", loginUser);
         }
 
-
-        // -----------------------------
         // CHANGEMENT AUTH
-        // -----------------------------
 
-        if (
-            switchAuth
-        ) {
-
-            switchAuth
-                .addEventListener(
-                    "click",
-                    () => {
-
-                        const registerVisible =
-
-                            !registerForm
-                                .classList
-                                .contains(
-                                    "hidden"
-                                );
-
-
-                        if (
-                            registerVisible
-                        ) {
-
+        if (switchAuth) {
+            switchAuth.addEventListener("click",() => {const registerVisible =!registerForm.classList.contains("hidden");
+                        if ( registerVisible ) {
                             showLoginMode();
-
                         }
-
-                        else {
-
-                            showRegisterMode();
-
-                        }
-
+                        else { showRegisterMode(); }
                     }
                 );
-
         }
 
 
-        // -----------------------------
         // MOT DE PASSE OUBLIE
-        // -----------------------------
 
-        if (
-            forgotPasswordButton
-        ) {
-
-            forgotPasswordButton
-                .addEventListener(
-                    "click",
-                    resetPassword
-                );
-
+        if (forgotPasswordButton) {
+            forgotPasswordButton.addEventListener("click", resetPassword);
         }
 
 
@@ -1746,114 +1675,37 @@ document.addEventListener(
         // DECONNEXION DESKTOP
         // -----------------------------
 
-        document
-            .getElementById(
-                "logoutButton"
-            )
-            ?.addEventListener(
-                "click",
-                logoutUser
-            );
-
-
-        // -----------------------------
+        document.getElementById("logoutButton")?.addEventListener("click",logoutUser);
         // DECONNEXION MOBILE
-        // -----------------------------
-
-        document
-            .getElementById(
-                "mobileLogoutButton"
-            )
-            ?.addEventListener(
-                "click",
-                logoutUser
-            );
-
-
-        // -----------------------------
+        document.getElementById("mobileLogoutButton")?.addEventListener("click",logoutUser);
         // RESERVATION
-        // -----------------------------
-
-        document
-            .getElementById(
-                "reservationForm"
-            )
-            ?.addEventListener(
-                "submit",
-                handleReservationSubmit
-            );
-
-
-        // -----------------------------
+        document.getElementById("reservationForm")?.addEventListener("submit",handleReservationSubmit);
+   
         // SURVEILLER AUTH
-        // -----------------------------
-
-        supabaseClient
-            .auth
-            .onAuthStateChange(
-                async (
-                    _event,
-                    session
-                ) => {
-
-                    if (
-                        session?.user
-                    ) {
-
-                        currentUser =
-                            session.user;
+      
+        supabaseClient.auth.onAuthStateChange(async (_event,session) => {
+                    if ( session?.user) {
+                        currentUser =session.user;
+                       const displayName =document.getElementById( "userDisplayName");
+                        const profile =await getMyProfile();
 
 
-                        const displayName =
-                            document
-                                .getElementById(
-                                    "userDisplayName"
-                                );
-
-
-                        const profile =
-                            await getMyProfile();
-
-
-                        if (
-                            displayName
-                        ) {
-
-                            displayName.textContent =
-
-                                profile?.name ||
-
-                                currentUser
-                                    .user_metadata
-                                    ?.name ||
-
-                                currentUser.email ||
-
-                                "";
-
+                        if ( displayName ) {
+                            displayName.textContent =profile?.name ||currentUser.user_metadata?.name ||currentUser.email || "";
                         }
-
-
                         hideAuth();
-
                     }
-
                     else {
-
-                        currentUser =
-                            null;
-
+                        currentUser =null;
                         showAuth();
-
                     }
-
                 }
             );
 
 
-        // -----------------------------
+  
         // VERIFIER SESSION
-        // -----------------------------
+        await loadPublicActivities()
 
         await loadCurrentUser();
 

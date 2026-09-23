@@ -536,7 +536,7 @@ function renderActivities(activitiesList = []) {
                 () => {
 
                     const id =
-                        Number(button.dataset.id);
+                        button.dataset.id;
 
                     openEditActivity(id);
                 }
@@ -555,7 +555,7 @@ function renderActivities(activitiesList = []) {
                 () => {
 
                     const id =
-                        Number(button.dataset.id);
+                        button.dataset.id;
 
                     deleteActivity(id);
                 }
@@ -618,7 +618,7 @@ function openEditActivity(id) {
     const activity =
         allActivities.find(
             item =>
-                Number(item.id) === Number(id)
+                String(item.id) === String(id)
         );
 
 
@@ -766,41 +766,23 @@ async function saveActivity(event) {
 
     try {
 
-        if (id) {
-
-            const { error } =
-                await supabaseClient
-                    .from("activities")
+        if (id) {const { error } =await supabaseClient.from("activities")
                     .update({
                         name,
                         category,
                         description,
                         icon,
                         color,
-                        updated_at:
-                            new Date().toISOString()
-                    })
-                    .eq(
-                        "id",
-                        Number(id)
-                    );
-
-
+                        updated_at: new Date().toISOString()})
+                    .eq("id", id);
             if (error) {
                 throw error;
             }
 
-
-            alert(
-                "Activité bien modifiée !"
-            );
-
+            alert("Activité bien modifiée !");
         } else {
 
-            const { error } =
-                await supabaseClient
-                    .from("activities")
-                    .insert({
+                const { error } = await supabaseClient.from("activities").insert({
                         name,
                         category,
                         description,
@@ -859,23 +841,13 @@ async function saveActivity(event) {
 
 async function deleteActivity(id) {
 
-    const activity =
-        allActivities.find(
-            item =>
-                Number(item.id) === Number(id)
-        );
-
-
+    const activity = allActivities.find(item => String(item.id) === String(id));
     if (!activity) {
         return;
     }
 
 
-    const confirmation =
-        confirm(
-            `Voulez-vous vraiment supprimer "${activity.name}" ?`
-        );
-
+    const confirmation =confirm(`Voulez-vous vraiment supprimer "${activity.name}" ?`);
 
     if (!confirmation) {
         return;
@@ -884,28 +856,16 @@ async function deleteActivity(id) {
 
     try {
 
-        const { error } =
-            await supabaseClient
-                .from("activities")
-                .delete()
-                .eq(
-                    "id",
-                    Number(id)
-                );
-
-
+        const { error } = await supabaseClient.from("activities").delete()
+                .eq("id",String(id));
         if (error) {
             throw error;
         }
 
 
-        alert(
-            "Activité supprimée avec succès."
-        );
-
+        alert("Activité supprimée avec succès.");
 
         await loadActivities();
-
         await updateDashboardStats();
 
 
@@ -929,37 +889,23 @@ async function deleteActivity(id) {
 ========================================================= */
 
 async function loadReservations() {
-
-    const table =
-        document.getElementById(
-            "reservationsTable"
-        );
-
-
+    const table =document.getElementById("reservationsTable");
     if (!table) {
         return;
     }
 
-
     table.innerHTML = `
         <tr>
-            <td
-                colspan="5"
-                class="text-center py-10
-                text-slate-400">
-
+            <td colspan="8" class="text-center py-10 text-slate-400">
                 Chargement...
-
             </td>
         </tr>
     `;
 
-
-    const { data, error } =
-        await supabaseClient
+    const { data, error } = await supabaseClient
             .from("reservations")
             .select(
-                "id,user_id,activity,date,time,is_started,created_at"
+                "id,user_id,activity,date,time,is_started,validated,created_at,profiles(name)"
             )
             .order("date", {
                 ascending: true
@@ -993,9 +939,11 @@ async function loadReservations() {
 
         return;
     }
-
-
-    allReservations = data || [];
+    const reservations = data.map(reservation =>({
+        ...reservation,
+        user_name:reservation.profiles?.name || "Inconnu"
+    }));
+    allReservations = reservations;
 
     renderReservations(
         allReservations
@@ -1005,27 +953,53 @@ async function loadReservations() {
 }
 
 
+async function toggleReservationValidation(reservationId,validated){
+    try{
+        const {error} = await supabaseClient.from("reservations").update({validated:validated}).eq("id",reservationId);
+        if(error){
+            throw error;
+        }
+        console.log(validated ?"Réservation validée.":"Validation rétirée.");
+        await loadReservations();
+        
+    }catch(error){
+        console.error("Erreur de validation réservation:",error);
+        alert("Impossible de modifier la validation de la réservation.");
+        
+    }
+}
+
+
+
+async function deleteReservation(reservationId) {
+    const confirmation = confirm("Voulez-vous vraiment supprimer cette réservation terminée?");
+    if(!confirmation){return;}
+    try {
+        const {error} = await supabaseClient.from("reservations").delete().eq("id",reservationId);
+        if(error){
+            throw error;
+        }
+        console.log("Réservation supprimé:",reservationId);
+        await loadReservations();
+        
+    } catch (error) {
+        console.error("Erreur de la suppression de réservation:",error);
+        alert("Impossible de supprimer cette réservation.");
+        
+    }
+}
+
 /* =========================================================
    AFFICHER RÉSERVATIONS
 ========================================================= */
 
-function renderReservations(
-    reservations = []
-) {
-
-    const table =
-        document.getElementById(
-            "reservationsTable"
-        );
-
-
+function renderReservations(reservations = []) {
+    const table =document.getElementById("reservationsTable");
     if (!table) {
         return;
     }
 
-
     if (reservations.length === 0) {
-
         table.innerHTML = `
             <tr>
                 <td
@@ -1045,11 +1019,56 @@ function renderReservations(
 
     table.innerHTML =
         reservations.map(
-            reservation => {
+            reservation => {const started = reservation.is_started === true;
+                const reservationDateTime = new Date(`${reservation.date}T${reservation.time}`);
+                const isFinished = reservationDateTime < new Date();
 
-                const started =
-                    reservation.is_started === true;
+                let statusHtml = "";
+                if(isFinished){
+                    statusHtml = `
+                    <span class = "inline-flex px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold">
+                        Terminé
+                    </span>
+                    `;
+                }else if(started){
+                    statusHtml = `
+                        <span class = "inline-flex px-3 py-1 rounded-full bg-green-700 text-xs font-bold">
+                            En cours
+                        </span>
+                    `;
+                }else{
+                    statusHtml = `
+                        <span class = "inline-flex px-3 py-1 rounded-full bg-slate-100 text-xs font-bold">
+                            Réservée
+                        </span>
+                    `;
+                }
 
+                const validationHtml = reservation.validated?`
+                <div class = "flex items-center gap-2">
+                    <input type = "checkbox" checked onchage = "toggleReservationValidation('${reservation.id}',this.checked)
+                                class = "w-5 h-5 accent-[#A71D78] cursor-pointer">
+                    <span class = "text-green-600 text-sm font-semibold">Validée</span>
+                    
+                </div>
+                `:`
+                <div class = "flex items-center gap-2">
+                    <input type = "checkbox" onchange = "toggleReservationValidation('${reservation.id}',this.checked)"
+                        class = "w-5 h-5 accent-[A71D78] cursor-pointer">
+                    <span class = "text-slate-400 text-sm">Non validée</span>
+                </div>
+                `;
+
+                const deleteHtml = isFinished?`
+                    <button type = "button" onclick = "deleteReservation('${reservation.id}')"
+                           class = "inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-red-100 hover:bg-red-200 transition" >
+                        <i class = bi bi-trash></i>
+                        Supprimer
+                    </button>
+                `:`
+
+                <span class = "text-xs text-slate-400">-</span>
+                `;
 
                 return `
                     <tr
@@ -1080,7 +1099,6 @@ function renderReservations(
 
                         </td>
 
-
                         <td
                             class="px-5 py-4 text-sm">
 
@@ -1093,42 +1111,10 @@ function renderReservations(
                         </td>
 
 
-                        <td class="px-5 py-4">
-
-                            ${
-                                started
-
-                                ? `
-                                    <span
-                                        class="inline-flex
-                                        px-3 py-1
-                                        rounded-full
-                                        bg-green-100
-                                        text-green-700
-                                        text-xs font-bold">
-
-                                        En cours
-
-                                    </span>
-                                `
-
-                                : `
-
-                                    <span
-                                        class="inline-flex
-                                        px-3 py-1
-                                        rounded-full
-                                        bg-slate-100
-                                        text-slate-600
-                                        text-xs font-bold">
-
-                                        Réservée
-
-                                    </span>
-                                `
-                            }
-
+                        <td class = "px-5 py-4">
+                            ${statusHtml}
                         </td>
+                        
 
 
                         <td class="px-5 py-4">
@@ -1143,7 +1129,17 @@ function renderReservations(
                             </span>
 
                         </td>
+                        <td class = "px-5 py-4">
+                                <span class = "text-xs text-[#A71D78] font-bold">
+                                ${escapeHtml(reservation.user_name)}
+                                </span>
+                        </td>
 
+                        <td class = "px-5 py-4">
+                                ${validationHtml}
+                        </td>
+
+                        <td class = "px-5 py-4">${deleteHtml}</td>
                     </tr>
                 `;
             }
@@ -1658,36 +1654,14 @@ function searchReservations(value) {
 
 function searchUsers(value) {
 
-    const search =
-        value.trim().toLowerCase();
-
-
+    const search = value.trim().toLowerCase();
     if (!search) {
-
         renderUsers(allUsers);
-
         return;
     }
 
 
-    const filtered =
-        allUsers.filter(
-            user =>
-                String(
-                    user.name || ""
-                )
-                    .toLowerCase()
-                    .includes(search)
-
-                ||
-
-                String(
-                    user.phone || ""
-                )
-                    .toLowerCase()
-                    .includes(search)
-        );
-
+    const filtered = allUsers.filter( user => String(user.name || "").toLowerCase().includes(search) || String(user.phone || "").toLowerCase().includes(search));
 
     renderUsers(filtered);
 }
@@ -1699,53 +1673,19 @@ function searchUsers(value) {
 
 function openMobileSidebar() {
 
-    const sidebar =
-        document.getElementById(
-            "sidebar"
-        );
-
-
-    const overlay =
-        document.getElementById(
-            "sidebarOverlay"
-        );
-
-
-    sidebar?.classList.remove(
-        "-translate-x-full"
-    );
-
-
-    overlay?.classList.remove(
-        "hidden"
-    );
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+    sidebar?.classList.remove("-translate-x-full");
+    overlay?.classList.remove("hidden");
 }
 
 
 function closeMobileSidebar() {
-
-    const sidebar =
-        document.getElementById(
-            "sidebar"
-        );
-
-
-    const overlay =
-        document.getElementById(
-            "sidebarOverlay"
-        );
-
-
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebarOverlay");
     if (window.innerWidth < 1024) {
-
-        sidebar?.classList.add(
-            "-translate-x-full"
-        );
-
-
-        overlay?.classList.add(
-            "hidden"
-        );
+        sidebar?.classList.add("-translate-x-full");
+        overlay?.classList.add("hidden");
     }
 }
 
@@ -1755,28 +1695,14 @@ function closeMobileSidebar() {
 ========================================================= */
 
 async function logoutAdmin() {
-
-    const { error } =
-        await supabaseClient.auth.signOut();
-
+    const { error } = await supabaseClient.auth.signOut();
 
     if (error) {
-
-        console.error(
-            "Erreur de déconnexion :",
-            error
-        );
-
-        alert(
-            "Erreur lors de la déconnexion"
-        );
-
+        console.error("Erreur de déconnexion :",error);
+        alert("Erreur lors de la déconnexion");
         return;
     }
-
-
-    window.location.href =
-        "../index.html";
+    window.location.href ="../index.html";
 }
 
 
@@ -1785,31 +1711,16 @@ async function logoutAdmin() {
 ========================================================= */
 
 document.addEventListener(
-    "DOMContentLoaded",
-    async () => {
-
-        const isAdmin =
-            await checkAdminAccess();
-
+    "DOMContentLoaded",async () => {const isAdmin = await checkAdminAccess();
 
         if (!isAdmin) {
             return;
         }
-
-
         /* MENU */
 
-        document
-            .querySelectorAll(".admin-menu")
-            .forEach(button => {
-
-                button.addEventListener(
-                    "click",
-                    () => {
-
-                        showSection(
-                            button.dataset.section
-                        );
+        document.querySelectorAll(".admin-menu").forEach(button => {
+                button.addEventListener("click",() => {
+                        showSection(button.dataset.section);
                     }
                 );
             });
@@ -1817,143 +1728,44 @@ document.addEventListener(
 
         /* SIDEBAR */
 
-        document
-            .getElementById(
-                "menuButton"
-            )
-            ?.addEventListener(
-                "click",
-                openMobileSidebar
-            );
-
-
-        document
-            .getElementById(
-                "sidebarOverlay"
-            )
-            ?.addEventListener(
-                "click",
-                closeMobileSidebar
-            );
-
+        document.getElementById("menuButton").addEventListener("click",openMobileSidebar);
+        document.getElementById("sidebarOverlay").addEventListener("click",closeMobileSidebar);
 
         /* LOGOUT */
 
-        document
-            .getElementById(
-                "logoutButton"
-            )
-            ?.addEventListener(
-                "click",
-                logoutAdmin
-            );
-
+        document.getElementById("logoutButton" ).addEventListener( "click",logoutAdmin);
 
         /* ACTIVITÉ */
 
-        document
-            .getElementById(
-                "addActivityButton"
-            )
-            ?.addEventListener(
-                "click",
-                openActivities
-            );
-
-
-        document
-            .getElementById(
-                "closeActivityModal"
-            )
-            ?.addEventListener(
-                "click",
-                closeActivityModal
-            );
-
-
-        document
-            .getElementById(
-                "cancelActivityButton"
-            )
-            ?.addEventListener(
-                "click",
-                closeActivityModal
-            );
-
-
-        document
-            .getElementById(
-                "activityForm"
-            )
-            ?.addEventListener(
-                "submit",
-                saveActivity
-            );
-
-
+        document.getElementById("addActivityButton" ).addEventListener("click", openActivities);
+        document.getElementById( "closeActivityModal").addEventListener("click",closeActivityModal);
+        document.getElementById("cancelActivityButton").addEventListener("click",closeActivityModal);
+        document.getElementById("activityForm").addEventListener("submit",saveActivity );
         /* RECHERCHE RÉSERVATIONS */
-
-        document
-            .getElementById(
-                "reservationSearch"
-            )
-            ?.addEventListener(
-                "input",
-                event => {
-
-                    searchReservations(
-                        event.target.value
-                    );
+        document.getElementById("reservationSearch").addEventListener("input",event => {
+                    searchReservations(event.target.value);
                 }
             );
-
-
         /* RECHERCHE MEMBRES */
-
-        document
-            .getElementById(
-                "userSearch"
-            )
-            ?.addEventListener(
-                "input",
-                event => {
-
-                    searchUsers(
-                        event.target.value
-                    );
+        document.getElementById("userSearch").addEventListener("input",event => {
+                    searchUsers(event.target.value);
                 }
             );
-
 
         /* RAFRAÎCHIR RÉSERVATIONS */
-
-        document
-            .getElementById(
-                "refreshReservations"
-            )
-            ?.addEventListener(
-                "click",
-                async () => {
-
+        document.getElementById("refreshReservations").addEventListener("click",async () => {
                     await loadReservations();
-
                     await loadRecentReservations();
-
                     await updateDashboardStats();
                 }
             );
 
-
         /* CHARGEMENT INITIAL */
 
         await loadActivities();
-
         await loadReservations();
-
         await loadUsers();
-
         await loadRecentReservations();
-
         await updateDashboardStats();
 
 
@@ -1964,8 +1776,7 @@ document.addEventListener(
 
                 if (!session?.user) {
 
-                    window.location.href =
-                        "../index.html";
+                    window.location.href ="../index.html";
                 }
             }
         );
