@@ -163,96 +163,117 @@
                     <a href="#contact" class="p-3 rounded-lg hover:bg-slate-100">
                         Contact
                     </a>
+                    <button onclick="openActivities()" class="sm:flex bg-[#005383] px-3 py-3 rounded-xl text-white hover:text-[#A71D78]  font-semibold transition cursor-pointer">Vos activités</button>
                 </div>
              </div>
         </div>
      </header>
      <!-- =========HERO============ -->
-      <section id="accueil" class="hero-pattern pt-32 pb-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid lg:grid-cols-2 gap-12 items-center">
-                <div class="text-white">
-                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight">
-                        Une espace pour
-                        <span class="text-sky-400">apprendre,</span>
-                        <span class="text-green-400">jouer</span>
-                        et
-                        <span text-orange-400>partager.</span>
-                    </h1>
-                    <p class="mt-6 text-lg text-slate-300 max-w-xl">
-                        Bienvenue chez CiteActive, un espace communautaire pensé pour les enfants, les jeunes, les adultes et les familles.
-                    </p>
-                    <div class="flex flex-wrap gap-4 mt-8">
-                        <a href="#membres" class="bg-[#A71D78] hover:bg-[#8F1967] px-6 py-3 rounded-xl font-bold transition">
-                            Découvrir les offres
-                        </a>
-                        <a href="#activites" class="border border-white/30 hover:bg-white/10 px-6 py-3 rounded-xl font-bold transition">
-                            Voir les activités
-                        </a>
 
-                    </div>
-                    <div class="grid grid-cols-3 gap-5 mt-12 max-w-lg">
-                        <div>
-                            <p class="text-3xl font-black">100+</p>
-                            <p class="text-sm text-slate-400">membres</p>
-                        </div>
-                        <div>
-                            <p class="text-3xl font-black">20+</p>
-                            <p class="text-sm text-slate-400">activités</p>
-                        </div>
-                        <div>
-                            <p class="text-3xl font-black ">6j/7</p>
-                            <p class="text-sm text-slate-400">convivialité</p>
-                        </div>
-
-                    </div>
-                </div>
-                <!-- ====CARTE==== -->
-                 <div class="relative">
-                    <div class="bg-white rounded-3xl shadow-2xl p-6 max-w-md mx-auto">
-                        <div class="flex items-center justify-between mb-6">
-                            <div>
-                                <p class="text-sm text-slate-500">Aujourd'hui</p>
-                                <h3 class="text-xl font-bold">Programme</h3>
-                            </div>
-                            <div class="w-12 h-12 bg-[#A71D78] rounded-xl flex items-center justify-center">
-                                <i class="bi bi-calendar3 text-white text-2xl"></i>
-                            </div>
-                            
-                        </div>
-                        <div class="space-y-4">
-                            <div class="flex gap-4 p-4 rounded-2xl bg-slate-50">
-                                <div class="font-bold text-sky-600">
-                                    11h
-                                </div>
-                                <div>
-                                    <p class="font-semibold">Jeux de société</p>
-                                    <p class="text-sm text-slate-500">Espace commun</p>
-                                </div>
-                            </div>
-                            <div class="flex gap-4 p-4 rounded-2xl bg-slate-50">
-                                <div class="font-bold text-green-600">12h</div>
-                                <div>
-                                    <p class="font-semibold">Coin lecture</p>
-                                    <p class="text-sm text-slate-500">Livre Kasaboky</p>
-                                </div>
-                            </div>
-                            <div class="flex gap-4 p-4 rounded-2xl bg-slate-50">
-                                 <div class="font-bold text-orange-600">13h</div>
-                                 <div>
-                                    <p class="font-semibold">PS5</p>
-                                    <p class="text-sm text-slate-500">Salle numérique</p>
-                                 </div>
-                            </div>
-                        </div>
-                        <button onclick="openReservation()" class="w-full mt-6 bg-[#A71D78] hover:bg-[#8F1967] text-white py-3 rounded-xl font-bold cursor-pointer">
-                            Réserver une activité
-                        </button>
-                    </div>
-                 </div>
+     <section id="accueil" class="hero-pattern relative overflow-hidden pt-32 pb-20">
+        <div id="heroBackground" class="absolute inset-0 z-0">
+            <div class="hero-slide active">
+                <img src="/src/images/créatif.webp" alt="">
             </div>
+            <div class="hero-slide">
+                <img src="/src/images/salle de musique.webp" alt="">
+            </div>
+            <div class="hero-slide">
+                <img src="/src/images/Salle numérique.webp" alt="">
+            </div>
+
         </div>
-      </section>
+        <div class="hero-overlay absolute inset-0 z-10"></div>
+        <div class="relative z-20">
+             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div class="text-white">
+                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight">
+                            Une espace pour
+                            <span class="text-sky-400">apprendre,</span>
+                            <span class="text-green-400">jouer</span>
+                            et
+                            <span class="text-orange-400">partager.</span>
+                        </h1>
+                        <p class="mt-6 text-lg text-slate-300 max-w-xl">
+                             Bienvenue chez CiteActive, un espace communautaire pensé pour les enfants, les jeunes, les adultes et les familles.
+                        </p>
+                        <div class="flex flex-wrap gap-4 mt-8">
+                            <a href="#membres" class="bg-[#A71D78] hover:bg-[#8F1967] px-6 py-3 rounded-xl font-bold transition">
+                                Découvrir les offres
+                            </a>
+                            <a href="#activites" class="border border-white/30 hover:bg-white/10 px-6 py-3 rounded-xl font-bold transition">
+                                Voir les activités
+                            </a>
+                        </div>
+                        <div class="grid grid-cols-3 gap-5 mt-12 max-w-lg">
+                            <div>
+                                <p class="text-3xl font-black">100+</p>
+                                <p class="text-sm text-slate-400">membres</p>
+                            </div>
+                            <div>
+                                <p class="text-3xl font-black">20+</p>
+                                <p class="text-sm text-slate-400">activités</p>
+                            </div>
+                            <div>
+                                <p class="text-3xl font-black ">6j/7</p>
+                                <p class="text-sm text-slate-400">convivialité</p>
+                            </div>
+
+                        </div>
+                        
+                    </div>
+                    <div class="relative">
+                        <div class="bg-white rounded-3xl shadow-2xl p-6 max-w-md mx-auto">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <p class="text-sm text-slate-500">Aujourd'hui</p>
+                                    <h3 class="text-xl font-bold">Programme</h3>
+                                </div>
+                                <div class="w-12 h-12 bg-[#A71D78] rounded-xl flex items-center justify-center">
+                                    <i class="bi bi-calendar3 text-white text-2xl"></i>
+                                </div>
+                                
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex gap-4 p-4 rounded-2xl bg-slate-50">
+                                    <div class="font-bold text-sky-600">
+                                        11h
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold">Jeux de société</p>
+                                        <p class="text-sm text-slate-500">Espace commun</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4 p-4 rounded-2xl bg-slate-50">
+                                    <div class="font-bold text-green-600">12h</div>
+                                    <div>
+                                        <p class="font-semibold">Coin lecture</p>
+                                        <p class="text-sm text-slate-500">Livre Kasaboky</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4 p-4 rounded-2xl bg-slate-50">
+                                    <div class="font-bold text-orange-600">13h</div>
+                                    <div>
+                                        <p class="font-semibold">PS5</p>
+                                        <p class="text-sm text-slate-500">Salle numérique</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="openReservation()" class="w-full mt-6 bg-[#A71D78] hover:bg-[#8F1967] text-white py-3 rounded-xl font-bold cursor-pointer">
+                                Réserver une activité
+                            </button>
+                        </div>
+                    </div>                    
+
+                </div>
+                
+
+             </div>
+        </div>
+
+     </section>
+
 <!-- ============ACTIVITES=================== -->
  <section id="activites" class="py-20 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

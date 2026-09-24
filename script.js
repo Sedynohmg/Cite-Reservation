@@ -7,6 +7,26 @@ let currentYear = currentDate.getFullYear();
 let selectedDate = null;
 let selectedTime = null;
 
+
+   /*HERO BACKGROUND SLIDER*/
+
+function initHeroSlider() {
+    const slides = document.querySelectorAll(".hero-slide");
+    if (slides.length === 0) {
+        return;
+    }
+
+    let currentSlide = 0;
+
+    setInterval(() => {
+        slides[currentSlide].classList.remove("active");
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add("active");
+
+    }, 4000);
+}
+
+
 const timeSlots = [
 
     "11:00",
@@ -377,9 +397,7 @@ async function loginUser(event) {
     console.log("Profil utilisateur :", profile);
     console.log("Rôle :", profile.role);
 
-    // ==========================================
     // CAS ADMINISTRATEUR
-    // ==========================================
 
     if (profile.role === "admin") {
 
@@ -390,12 +408,10 @@ async function loginUser(event) {
         return;
     }
 
-    // ==========================================
+
     // CAS UTILISATEUR NORMAL
-    // ==========================================
 
     await loadCurrentUser();
-
     alert("Connexion réussie !");
 }
 
@@ -422,8 +438,7 @@ async function resetPassword() {
         return;
     }
 
-    const {error} =
-        await supabaseClient.auth.resetPasswordForEmail(email,{
+    const {error} = await supabaseClient.auth.resetPasswordForEmail(email,{
                     redirectTo:
                         window.location.origin +
                         window.location.pathname
@@ -1316,6 +1331,7 @@ document.addEventListener("keydown", event => {
 
 
 document.addEventListener("DOMContentLoaded",async () => {
+        initHeroSlider()
         initMobileMenu();
         initCalendarButtons();
 
