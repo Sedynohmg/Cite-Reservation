@@ -1044,9 +1044,9 @@ function renderReservations(reservations = []) {
                     `;
                 }
 
-                const validationHtml = reservation.validated?`
+                const validationHtml = reservation.validated === true ?`
                 <div class = "flex items-center gap-2">
-                    <input type = "checkbox" checked onchage = "toggleReservationValidation('${reservation.id}',this.checked)
+                    <input type = "checkbox" checked onchange = "toggleReservationValidation('${reservation.id}',this.checked)
                                 class = "w-5 h-5 accent-[#A71D78] cursor-pointer">
                     <span class = "text-green-600 text-sm font-semibold">Validée</span>
                     
@@ -1062,7 +1062,7 @@ function renderReservations(reservations = []) {
                 const deleteHtml = isFinished?`
                     <button type = "button" onclick = "deleteReservation('${reservation.id}')"
                            class = "inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-red-100 hover:bg-red-200 transition" >
-                        <i class = bi bi-trash></i>
+                        <i class = "bi bi-trash"></i>
                         Supprimer
                     </button>
                 `:`

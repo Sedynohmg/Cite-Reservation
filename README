@@ -1,14 +1,11 @@
-async function toggleReservationValidation(
-    reservationId,
-    validated
-) {
+async function toggleReservationStarted(reservationId, isStarted) {
 
     try {
 
         const { error } = await supabaseClient
             .from("reservations")
             .update({
-                validated: validated
+                is_started: isStarted
             })
             .eq("id", reservationId);
 
@@ -17,86 +14,24 @@ async function toggleReservationValidation(
         }
 
         console.log(
-            validated
-                ? "Réservation validée."
-                : "Validation retirée."
+            isStarted
+                ? "Réservation commencée."
+                : "Réservation remise en attente."
         );
 
-        /*
-        Recharger les réservations
-        */
-
         await loadReservations();
+        await loadRecentReservations();
+        await updateDashboardStats();
 
     } catch (error) {
 
         console.error(
-            "Erreur validation réservation :",
+            "Erreur démarrage réservation :",
             error
         );
 
         alert(
-            "Impossible de modifier la validation de la réservation."
-        );
-
-    }
-}
-
-
-
-Ajouter la suppression
-
-
-async function deleteReservation(reservationId) {
-
-    const confirmation = confirm(
-        "Voulez-vous vraiment supprimer cette réservation terminée ?"
-    );
-
-    if (!confirmation) {
-        return;
-    }
-
-    try {
-
-        const { error } = await supabaseClient
-            .from("reservations")
-            .delete()
-            .eq("id", reservationId);
-
-        if (error) {
-            throw error;
-        }
-
-        console.log(
-            "Réservation supprimée :",
-            reservationId
-        );
-
-        await loadReservations();
-
-    } catch (error) {
-
-        console.error(
-            "Erreur suppression réservation :",
-            error
-        );
-
-        alert(
-            "Impossible de supprimer cette réservation."
+            "Impossible de modifier le statut de la réservation."
         );
     }
 }
-
-
-const { data, error } = await supabaseClient
-    .from("reservations")
-    .select("*")
-    .eq("user_id", currentUser.id);
-
-
-    const { data, error } = await supabaseClient
-    .from("reservations")
-    .select("*")
-    .eq("user_id", currentUser.id)
-    .eq("validated", true);

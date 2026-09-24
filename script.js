@@ -1326,7 +1326,7 @@ async function getMyReservations() {
 
     const { data, error } =await supabaseClient
             .from("reservations")
-            .select("id,user_id, activity, date, time,is_started, created_at")
+            .select("id,user_id, activity, date, time,validated,is_started, created_at")
             .eq(
                 "user_id",
                 currentUser.id
@@ -1473,150 +1473,67 @@ function closeActivities() {
 
 async function renderActivities() {
 
-    const activitiesList =
-        document.getElementById(
-            "activitiesList"
-        );
+    const activitiesList = document.getElementById("activitiesList");
 
+    const noActivities = document.getElementById("noActivities");
 
-    const noActivities =
-        document.getElementById(
-            "noActivities"
-        );
-
-
-    if (
-        !activitiesList ||
-        !noActivities
-    ) {
-
+    if (!activitiesList ||!noActivities) {
         return;
-
     }
 
+    activitiesList.innerHTML = "";
 
-    activitiesList.innerHTML =
-        "";
+    const reservations = await getMyReservations();
 
-
-    const reservations =
-        await getMyReservations();
-
-
-    if (
-        reservations.length ===
-        0
-    ) {
-
-        noActivities
-            .classList
-            .remove("hidden");
-
+    if ( reservations.length === 0) {
+        noActivities.classList.remove("hidden");
         return;
-
     }
      noActivities.classList.add("hidden");
 
     reservations.forEach(
         reservation => {
-            const isChecked = reservation.is_started === true;
-            const item = document.createElement("label");
+            const isValidated = reservation.validated === true;
+            const isStarted = reservation.is_started === true;
 
-            item.className = "flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-2xl hover:border-sky-300 hover:bg-sky-50/50 transition";
+            let statusText = "";
+            let statusClass = "";
 
-            item.innerHTML =`
-        
-                <input type="checkbox" class="activity-checkbox w-5 h-5 accent-sky-600 cursor-pointer shrink-0"
-                    data-reservation-id="${escapeHtml(reservation.id)}"
-                    ${isChecked ? "checked" : ""}>
-                <div class="flex-1 min-w-0">
+            if(!isValidated){
+                statusText = "En attente de validation";
+                statusClass = "bg-amber-100 text-amber-700";
+            }else if(!isStarted){
+                statusText = "Réservée";
+                statusClass = "bg-slate-100 text-slate-500"
+            }else{
+                statusText = "En cours";
+                statusClass = "bg-green-100 text-green-700"
+            }
 
-                    <h3 class="font-bold text-slate-800 truncate">
-                        ${escapeHtml(reservation.activity)}
-                    </h3>
 
+             const item = document.createElement("div");
 
-                    <p class="text-sm text-slate-500 mt-1">
+             item.className = "flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-2xl hover:border-sky-300 hover:bg-sky-50/50 transition";
 
-                        <i class="bi bi-calendar3 mr-1"></i>
-                        ${escapeHtml(formatDate(reservation.date))}
-                        <span class="mx-1">•</span>
-                        <i class="bi bi-clock mr-1"></i>
+             item.innerHTML =`
 
-                        ${escapeHtml(String( reservation.time).slice(0, 5))}
+                <div class="w-12 h-12 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
+                    <i class ="bi bi-calendar-check text-xl"></i>
+                </div>
+                <div class = "flex-1 min-w-0">
+                    <h3 class = "font-bold text-slate-800 truncate">${escapeHtml(reservation.activity)}</h3>
+                    <p class ="text-sm text-slate-500 mt-1">
+                        <i class ="bi bi-calendar3 mr-1"></i>
+                        ${escapeHtml(reservation.date)}
+                        <span class ="mx-1">•</span>
+                        <i class ="bi bi-clock mr-1"></i>
+                        ${escapeHtml(String(reservation.time || "").slice(0,5))}
                     </p>
                 </div>
-                <span class="activity-status text-xs font-bold px-3 py-1.5 rounded-full ${
-                    isChecked ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"
-                        }">
-                        ${isChecked ? "En cours" : "Réservée"}
+                <span class = "activity-status shrink-0 text-xs font-bold px-3 py-1.5 rounded-full ${statusClass}">
+                    ${statusText}
                 </span>
                 `;
-                 const checkbox = item.querySelector(".activity-checkbox");
-                const status = item.querySelector(".activity-status");
-
-                checkbox.addEventListener("change", async () => {
-
-                    const newStatus = checkbox.checked;
-
-                    // Changement visuel immédiat
-                    if (newStatus) {
-
-                        status.textContent = "En cours";
-
-                        status.className = "activity-status text-xs font-bold px-3 py-1.5 rounded-full bg-green-100 text-green-700";
-
-                    } else {
-
-                        status.textContent = "Réservée";
-                        status.className ="activity-status text-xs font-bold px-3 py-1.5 rounded-full bg-slate-100 text-slate-500";
-                    }
-
-                    // Mise à jour dans Supabase
-                    const { error } = await supabaseClient
-                        .from("reservations")
-                        .update({
-                            is_started: newStatus
-                        })
-                        .eq("id", reservation.id);
-
-                    // Si Supabase rencontre une erreur
-                    if (error) {
-
-                        console.error(
-                            "Erreur lors de la mise à jour :",
-                            error
-                        );
-
-                        // On annule le changement visuel
-                        checkbox.checked = !newStatus;
-
-                        if (checkbox.checked) {
-
-                            status.textContent = "En cours";
-
-                            status.className =
-                                "activity-status text-xs font-bold px-3 py-1.5 rounded-full bg-green-100 text-green-700";
-
-                        } else {
-
-                            status.textContent = "Réservée";
-
-                            status.className =
-                                "activity-status text-xs font-bold px-3 py-1.5 rounded-full bg-slate-100 text-slate-500";
-                        }
-
-                        alert("Impossible de modifier le statut de cette activité.");
-
-                        return;
-                    }
-
-                    // Mise à jour de l'objet local
-                    reservation.is_started = newStatus;
-
-                    console.log("Statut enregistré dans Supabase.");
-
-                });
             activitiesList.appendChild( item );
         });
 
