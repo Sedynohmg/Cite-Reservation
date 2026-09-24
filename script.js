@@ -126,16 +126,6 @@ function renderPublicActivities(activities){
     }).join("")
 }
 
-
-
-
-
-
-
-
-
-
-
 async function loadPublicActivities(){
     const container = document.getElementById("activitiesContainer");
     if(!container){return;}
@@ -697,101 +687,54 @@ function updateAgenda() {
 }
 
 
-// =====================================================
+
 // SELECTION DATE
-// =====================================================
-
-async function selectDate(
-    dateString
-) {
-
-    selectedDate =
-        dateString;
 
 
-    selectedTime =
-        null;
+async function selectDate(dateString) {
 
+    selectedDate = dateString;
+    selectedTime = null;
 
-    const dateInput =
-        document.getElementById(
-            "date"
-        );
-
-
-    const timeInput =
-        document.getElementById(
-            "time"
-        );
-
+    const dateInput = document.getElementById("date");
+    const timeInput = document.getElementById("time");
 
     if (dateInput) {
 
-        dateInput.value =
-            dateString;
-
+        dateInput.value = dateString;
     }
-
 
     if (timeInput) {
 
-        timeInput.value =
-            "";
+        timeInput.value =  "";
 
     }
 
-
     resetSubmitButton();
-
-
     renderCalendar();
-
-
     await renderTimeSlots();
 
 }
 
 
-// =====================================================
 // AFFICHER CRENEAUX
-// =====================================================
 
 async function renderTimeSlots() {
 
-    const container =
-        document.getElementById(
-            "timeSlots"
-        );
-
-
-    const selectedDateText =
-        document.getElementById(
-            "selectedDateText"
-        );
-
+    const container = document.getElementById("timeSlots");
+    const selectedDateText = document.getElementById("selectedDateText");
 
     if (!container) {
-
         return;
-
     }
 
-
-    container.innerHTML =
-        "";
-
+    container.innerHTML = "";
 
     if (!selectedDate) {
 
-        if (
-            selectedDateText
-        ) {
-
-            selectedDateText.textContent =
-                "Sélectionnez une date dans le calendrier.";
-
+        if ( selectedDateText ) {
+            selectedDateText.textContent = "Sélectionnez une date dans le calendrier.";
         }
-
 
         container.innerHTML = `
 
@@ -819,154 +762,76 @@ async function renderTimeSlots() {
     }
 
 
-    if (
-        selectedDateText
-    ) {
-
+    if (selectedDateText) {
         selectedDateText.textContent =
-            formatDate(
-                selectedDate
-            );
-
+            formatDate(selectedDate );
     }
 
-
-    const activity =
-        document
-            .getElementById(
-                "activity"
-            )
-            ?.value ||
-        "";
-
+    const activity = document.getElementById("activity")?.value || "";
 
     if (!activity) {
-
         container.innerHTML = `
-
             <div class="sm:col-span-2 p-5 rounded-xl bg-yellow-50 border border-yellow-200 text-center">
-
                 <p class="text-sm text-yellow-700">
-
                     Sélectionnez une activité pour voir les disponibilités.
 
                 </p>
-
             </div>
-
         `;
 
-
         return;
-
     }
 
 
-    const {
-        data: reservations,
-        error
-    } =
+    const {data: reservations,error} =
         await supabaseClient
-
             .from("reservations")
-
-            .select(
-                "id, time"
-            )
-
-            .eq(
-                "activity",
-                activity
-            )
-
-            .eq(
-                "date",
-                selectedDate
-            );
-
-
+            .select("id, time")
+            .eq("activity",activity)
+            .eq("date",selectedDate);
     if (error) {
-
         console.error(error);
 
-
         container.innerHTML = `
-
             <div class="sm:col-span-2 p-5 rounded-xl bg-red-50 border border-red-200 text-center">
-
                 <p class="text-sm text-red-700">
-
                     Impossible de récupérer les disponibilités.
-
                 </p>
-
             </div>
-
         `;
 
-
         return;
-
     }
 
 
     const reservedTimes =
         (reservations || [])
             .map(
-                reservation =>
-                    String(
-                        reservation.time
-                    )
-                    .slice(0, 5)
+                reservation =>String(reservation.time) .slice(0, 5)
             );
 
 
     timeSlots.forEach(
         time => {
 
-            const existingReservation =
-                reservedTimes
-                    .includes(
-                        time
-                    );
+            const existingReservation = reservedTimes.includes(time);
 
+            const button = document.createElement("button");
 
-            const button =
-                document.createElement(
-                    "button"
-                );
+            button.type ="button";
 
-
-            button.type =
-                "button";
-
-
-            if (
-                existingReservation
-            ) {
-
-                button.disabled =
-                    true;
-
-
-                button.className =
-                    "flex items-center justify-between p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 cursor-not-allowed";
-
-
+            if (existingReservation) {
+                button.disabled =true;
+                button.className = "flex items-center justify-between p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 cursor-not-allowed";
                 button.innerHTML = `
-
                     <span class="font-bold">
 
                         ${time}
 
                     </span>
-
                     <span class="flex items-center gap-2 text-sm">
-
                         <span class="w-2 h-2 bg-red-500 rounded-full"></span>
-
                         Réservé
-
                     </span>
 
                 `;
@@ -975,14 +840,11 @@ async function renderTimeSlots() {
 
             else {
 
-                button.className =
-                    "time-slot flex items-center justify-between p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 hover:bg-green-500 hover:text-white transition";
+                button.className = "time-slot flex items-center justify-between p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 hover:bg-green-500 hover:text-white transition";
 
 
                 if (
-                    selectedTime ===
-                    time
-                ) {
+                    selectedTime === time) {
 
                     button.classList.add(
                         "bg-sky-600",
@@ -992,21 +854,13 @@ async function renderTimeSlots() {
 
                 }
 
-
                 button.innerHTML = `
-
                     <span class="font-bold">
-
                         ${time}
-
                     </span>
-
                     <span class="flex items-center gap-2 text-sm">
-
                         <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-
                         Disponible
-
                     </span>
 
                 `;
@@ -1014,14 +868,10 @@ async function renderTimeSlots() {
 
                 button.addEventListener(
                     "click",
-                    () =>
-                        selectTime(
-                            time
-                        )
+                    () =>selectTime(time)
                 );
 
             }
-
 
             container.appendChild(
                 button
@@ -1033,59 +883,32 @@ async function renderTimeSlots() {
 }
 
 
-// =====================================================
 // SELECTION CRENEAU
-// =====================================================
-
-function selectTime(
-    time
-) {
-
-    selectedTime =
-        time;
 
 
-    const timeInput =
-        document.getElementById(
-            "time"
-        );
-
+function selectTime(time) {
+    selectedTime = time;
+    const timeInput = document.getElementById("time");
 
     if (timeInput) {
-
-        timeInput.value =
-            time;
-
+        timeInput.value = time;
     }
 
 
-    const submitButton =
-        document.getElementById(
-            "submitReservation"
-        );
-
+    const submitButton = document.getElementById("submitReservation");
 
     if (!submitButton) {
-
         return;
-
     }
 
 
-    submitButton.disabled =
-        false;
+    submitButton.disabled = false;
 
+    submitButton.className = "w-full bg-sky-600 hover:bg-sky-700 text-white py-3.5 rounded-xl font-bold transition";
 
-    submitButton.className =
-        "w-full bg-sky-600 hover:bg-sky-700 text-white py-3.5 rounded-xl font-bold transition";
-
-
-    submitButton.textContent =
-        `Réserver à ${time}`;
-
+    submitButton.textContent =`Réserver à ${time}`;
 
     renderTimeSlots();
-
 }
 
 
@@ -1357,119 +1180,59 @@ async function getMyReservations() {
 async function openActivities() {
 
     if (!currentUser) {
-
         showAuth();
-
         return;
-
     }
 
 
-    const modal =
-        document.getElementById(
-            "activitiesModal"
-        );
-
+    const modal = document.getElementById("activitiesModal");
 
     if (!modal) {
-
         return;
-
     }
 
+    const profile = await getMyProfile();
 
-    const profile =
-        await getMyProfile();
+    const clientNameElement = document.getElementById("currentClientName");
 
-
-    const clientNameElement =
-        document.getElementById(
-            "currentClientName"
-        );
-
-
-    if (
-        clientNameElement
-    ) {
-
-        clientNameElement.textContent =
-
-            profile?.name ||
-
-            currentUser
-                .user_metadata
-                ?.name ||
-
-            currentUser.email ||
-
-            "";
-
+    if (clientNameElement) {
+        clientNameElement.textContent = profile?.name || currentUser.user_metadata ?.name || currentUser.email || "";
     }
-
 
     await renderActivities();
 
 
-    modal
-        .classList
-        .remove("hidden");
+    modal.classList.remove("hidden");
 
+    modal.classList.add("flex");
 
-    modal
-        .classList
-        .add("flex");
-
-
-    document.body
-        .classList
-        .add(
-            "overflow-hidden"
-        );
+    document.body.classList.add("overflow-hidden");
 
 }
 
 
-// =====================================================
+
 // FERMER VOS ACTIVITES
-// =====================================================
+
 
 function closeActivities() {
 
-    const modal =
-        document.getElementById(
-            "activitiesModal"
-        );
-
+    const modal = document.getElementById("activitiesModal");
 
     if (!modal) {
-
         return;
-
     }
 
-
-    modal
-        .classList
-        .add("hidden");
-
-
-    modal
-        .classList
-        .remove("flex");
-
-
-    document.body
-        .classList
-        .remove(
-            "overflow-hidden"
-        );
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    document.body.classList.remove("overflow-hidden");
 
 }
 
 
-// =====================================================
+
 // AFFICHER VOS ACTIVITES
-// =====================================================
+
 
 async function renderActivities() {
 
@@ -1503,8 +1266,8 @@ async function renderActivities() {
                 statusText = "En attente de validation";
                 statusClass = "bg-amber-100 text-amber-700";
             }else if(!isStarted){
-                statusText = "Réservée";
-                statusClass = "bg-slate-100 text-slate-500"
+                statusText = "Réservation confirmée";
+                statusClass = "bg-emerald-500 text-black-500"
             }else{
                 statusText = "En cours";
                 statusClass = "bg-green-100 text-green-700"

@@ -905,7 +905,7 @@ async function loadReservations() {
     const { data, error } = await supabaseClient
             .from("reservations")
             .select(
-                "id,user_id,activity,date,time,is_started,validated,created_at,profiles(name)"
+                "id,user_id,activity,date,time,is_started,is_finished,validated,created_at,profiles(name)"
             )
             .order("date", {
                 ascending: true
@@ -969,6 +969,63 @@ async function toggleReservationValidation(reservationId,validated){
     }
 }
 
+/*ACTIVITES COMMENCER*/
+
+async function toggleReservationStarted(reservationId,isStarted){
+    try {
+        const {error} = await supabaseClient
+                        .from("reservations")
+                        .update({is_started:isStarted})
+                        .eq("id",reservationId);
+            if(error){
+                        throw error;
+                    }
+                    console.log(isStarted
+                            ? "Réservation commencé."
+                            :"Réservation en attente"
+                        );
+            await loadReservations();
+            await loadRecentReservations();
+            await updateDashboardStats();
+                        
+
+    } catch (error) {
+        console.error("Erreur démarrage réservation:",error);
+        alert("Impossible de modifier le status de la réservation.")
+        
+    }
+}
+
+/*ACTIVITES TERMINEES*/
+
+async function toggleReservationFinished(reservationId,isFinished){
+    try{
+        const {error} = await supabaseClient
+                        .from("reservations")
+                        .update({is_finished:isFinished})
+                        .eq("id",reservationId);
+        if(error){
+            throw error;
+        }
+        console.log(isFinished
+            ?"Réservation terminée."
+            :"Réservation remise en cours"
+        );
+        await loadReservations();
+        await loadRecentReservations();
+        await updateDashboardStats();
+        
+    }catch(error){
+        console.error("Erreur fin réservation:",error);
+        alert("Impossible de modifier le statut de la réservation.")
+        
+    }
+}
+
+
+
+
+
 
 
 async function deleteReservation(reservationId) {
@@ -989,9 +1046,9 @@ async function deleteReservation(reservationId) {
     }
 }
 
-/* =========================================================
-   AFFICHER RÉSERVATIONS
-========================================================= */
+
+  /* AFFICHER RÉSERVATIONS*/
+
 
 function renderReservations(reservations = []) {
     const table =document.getElementById("reservationsTable");
@@ -1002,10 +1059,7 @@ function renderReservations(reservations = []) {
     if (reservations.length === 0) {
         table.innerHTML = `
             <tr>
-                <td
-                    colspan="5"
-                    class="text-center py-10
-                    text-slate-400">
+                <td colspan="10" class="text-center py-10 text-slate-400">
 
                     Aucune réservation.
 
@@ -1020,11 +1074,10 @@ function renderReservations(reservations = []) {
     table.innerHTML =
         reservations.map(
             reservation => {const started = reservation.is_started === true;
-                const reservationDateTime = new Date(`${reservation.date}T${reservation.time}`);
-                const isFinished = reservationDateTime < new Date();
+                const finished = reservation.is_finished === true;
 
                 let statusHtml = "";
-                if(isFinished){
+                if(finished){
                     statusHtml = `
                     <span class = "inline-flex px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold">
                         Terminé
@@ -1059,7 +1112,7 @@ function renderReservations(reservations = []) {
                 </div>
                 `;
 
-                const deleteHtml = isFinished?`
+                const deleteHtml = finished?`
                     <button type = "button" onclick = "deleteReservation('${reservation.id}')"
                            class = "inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-red-100 hover:bg-red-200 transition" >
                         <i class = "bi bi-trash"></i>
@@ -1070,6 +1123,29 @@ function renderReservations(reservations = []) {
                 <span class = "text-xs text-slate-400">-</span>
                 `;
 
+                const startCheckboxHtml = `
+                    <div class = "flex items-center gap-2">
+                        <input type = "checkbox" ${started ?"checked":""} ${finished? "disabled":""}
+                            onchange = "toggleReservationStarted('${reservation.id}',this.checked)"
+                            class = "w-5 h-5 accent-[#A71D78] cursor-ponter disabled:opacity-40 disabled:cursor-not-allowed">
+                        <span class = "text-sm font-semibold ${started?"text-green-600":"text-slate-400"}">
+                            ${started?"En cours":"Commencer"}
+                        </span>
+                    </div>
+                `;
+
+                const finishCheckboxHtml = `
+                    <div class = "flex items-center gap-2">
+                        <input type = "checkbox" ${finished ? "checked":""} ${!started || finished ? "disabled":""}
+                            onchange = "toggleReservationFinished('${reservation.id}',this.checked)" class = "w-5 h-5 accent-[#A71D78]
+                            cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                        <span class = "text-sm font-semibold ${finished ? "text-red-600": "text-slate-400"}">
+                            ${finished? "Terminé" : "Terminer"}
+                        </span>
+                        
+                    </div>
+                `;
+
                 return `
                     <tr
                         class="border-t border-slate-100
@@ -1078,11 +1154,7 @@ function renderReservations(reservations = []) {
                         <td class="px-5 py-4">
 
                             <p class="font-semibold">
-
-                                ${escapeHtml(
-                                    reservation.activity
-                                )}
-
+                                ${escapeHtml(reservation.activity)}
                             </p>
 
                         </td>
@@ -1090,45 +1162,28 @@ function renderReservations(reservations = []) {
 
                         <td
                             class="px-5 py-4 text-sm">
-
-                            ${escapeHtml(
-                                formatDate(
-                                    reservation.date
-                                )
-                            )}
-
+                            ${escapeHtml(formatDate(reservation.date))}
                         </td>
+
 
                         <td
                             class="px-5 py-4 text-sm">
-
-                            ${escapeHtml(
-                                String(
-                                    reservation.time || ""
-                                ).slice(0, 5)
-                            )}
+                            ${escapeHtml( String(reservation.time || "").slice(0, 5))}
 
                         </td>
-
-
                         <td class = "px-5 py-4">
                             ${statusHtml}
                         </td>
                         
 
-
                         <td class="px-5 py-4">
-
                             <span
                                 class="text-xs text-slate-400">
-
-                                ${escapeHtml(
-                                    reservation.user_id
-                                )}
-
+                                ${escapeHtml(reservation.user_id)}
                             </span>
 
                         </td>
+
                         <td class = "px-5 py-4">
                                 <span class = "text-xs text-[#A71D78] font-bold">
                                 ${escapeHtml(reservation.user_name)}
@@ -1140,6 +1195,9 @@ function renderReservations(reservations = []) {
                         </td>
 
                         <td class = "px-5 py-4">${deleteHtml}</td>
+
+                        <td class = "px-5 py-4">${startCheckboxHtml}</td>
+                        <td class = "px-5 py-4">${finishCheckboxHtml}</td>
                     </tr>
                 `;
             }
@@ -1147,17 +1205,12 @@ function renderReservations(reservations = []) {
 }
 
 
-/* =========================================================
-   MEMBRES
-========================================================= */
+  /* MEMBRES*/
+
 
 async function loadUsers() {
 
-    const table =
-        document.getElementById(
-            "usersTable"
-        );
-
+    const table = document.getElementById("usersTable");
 
     if (!table) {
         return;
@@ -1225,17 +1278,12 @@ async function loadUsers() {
 }
 
 
-/* =========================================================
-   AFFICHER MEMBRES
-========================================================= */
+   //AFFICHER MEMBRES
+
 
 function renderUsers(users = []) {
 
-    const table =
-        document.getElementById(
-            "usersTable"
-        );
-
+    const table = document.getElementById("usersTable");
 
     if (!table) {
         return;
@@ -1354,10 +1402,7 @@ function renderUsers(users = []) {
 
 async function updateDashboardStats() {
 
-    const {
-        count: usersCount
-    } =
-        await supabaseClient
+    const {count: usersCount} =await supabaseClient
             .from("profiles")
             .select(
                 "id",
@@ -1382,46 +1427,20 @@ async function updateDashboardStats() {
             );
 
 
-    const {
-        count: startedCount
-    } =
+    const {count: startedCount} =
         await supabaseClient
             .from("reservations")
             .select(
                 "id",
-                {
-                    count: "exact",
-                    head: true
-                }
+                {count: "exact", head: true}
             )
-            .eq(
-                "is_started",
-                true
-            );
+            .eq("is_started",true);
+    const usersElement = document.getElementById("dashboardUsersCount");
+    const reservationsElement = document.getElementById("dashboardReservationsCount");
+    const activitiesElement = document.getElementById("dashboardActivitiesCount");
 
 
-    const usersElement =
-        document.getElementById(
-            "dashboardUsersCount"
-        );
-
-
-    const reservationsElement =
-        document.getElementById(
-            "dashboardReservationsCount"
-        );
-
-
-    const activitiesElement =
-        document.getElementById(
-            "dashboardActivitiesCount"
-        );
-
-
-    const startedElement =
-        document.getElementById(
-            "dashboardStartedCount"
-        );
+    const startedElement = document.getElementById("dashboardStartedCount");
 
 
     if (usersElement) {
