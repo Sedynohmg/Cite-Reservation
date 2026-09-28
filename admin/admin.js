@@ -6,10 +6,7 @@ let allReservations = [];
 let allUsers = [];
 let allActivities = [];
 
-
-/* =========================================================
-   OUTILS
-========================================================= */
+  // OUTILS
 
 function escapeHtml(value) {
     return String(value ?? "")
@@ -35,10 +32,7 @@ function formatDate(dateString) {
     });
 }
 
-
-/* =========================================================
-   COULEURS DES ACTIVITÉS
-========================================================= */
+   //COULEURS DES ACTIVITÉS
 
 function getActivityColor(color) {
 
@@ -71,9 +65,9 @@ function getActivityColor(color) {
 }
 
 
-/* =========================================================
-   VÉRIFICATION ADMIN
-========================================================= */
+
+ //  VÉRIFICATION ADMIN
+
 
 async function checkAdminAccess() {
 
@@ -81,18 +75,14 @@ async function checkAdminAccess() {
 
         console.log("1. Vérification de l'utilisateur...");
 
-        const { data, error } =
-            await supabaseClient.auth.getUser();
+        const { data, error } = await supabaseClient.auth.getUser();
 
         console.log("Auth data :", data);
         console.log("Auth error :", error);
 
         if (error || !data.user) {
-
             console.log("❌ Aucun utilisateur connecté");
-
             window.location.href = "../index.html";
-
             return false;
         }
 
@@ -117,95 +107,56 @@ async function checkAdminAccess() {
 
         if (profileError) {
 
-            console.error(
-                "❌ Erreur récupération profil :",
-                profileError
-            );
-
-            alert(
-                "Erreur récupération profil : " +
-                profileError.message
-            );
+            console.error("❌ Erreur récupération profil :", profileError);
+            alert("Erreur récupération profil : " + profileError.message);
 
             return false;
         }
 
 
         if (!profil) {
-
             console.error("❌ Profil introuvable");
-
             alert("Votre profil est introuvable.");
-
             return false;
         }
 
 
         adminProfile = profil;
-
         console.log("4. Rôle :", adminProfile.role);
-
 
         if (adminProfile.role !== "admin") {
 
-            console.log(
-                "❌ L'utilisateur n'est pas administrateur"
-            );
+            console.log("❌ L'utilisateur n'est pas administrateur");
 
             alert(
-                "Accès refusé.\nRôle actuel : " +
-                adminProfile.role
-            );
+                "Accès refusé.\nRôle actuel : " + adminProfile.role);
 
             window.location.href = "../index.html";
-
             return false;
         }
 
+        console.log("✅ ACCÈS ADMINISTRATEUR AUTORISÉ");
 
-        console.log(
-            "✅ ACCÈS ADMINISTRATEUR AUTORISÉ"
-        );
-
-
-        const adminName =
-            document.getElementById("adminName");
-
-        const adminEmail =
-            document.getElementById("adminEmail");
-
+        const adminName = document.getElementById("adminName");
+        const adminEmail =  document.getElementById("adminEmail");
 
         if (adminName) {
-
-            adminName.textContent =
-                adminProfile.name ||
-                adminUser.email ||
-                "Administrateur";
+            adminName.textContent = adminProfile.name || adminUser.email ||"Administrateur";
         }
-
 
         if (adminEmail) {
-
-            adminEmail.textContent =
-                adminUser.email || "";
+            adminEmail.textContent = adminUser.email || "";
         }
 
+        const loadingScreen = document.getElementById("loadingScreen");
 
-        const loadingScreen =
-            document.getElementById("loadingScreen");
-
-        const adminApp =
-            document.getElementById("adminApp");
-
+        const adminApp = document.getElementById("adminApp");
 
         if (loadingScreen) {
-
             loadingScreen.classList.add("hidden");
         }
 
-
         if (adminApp) {
-
             adminApp.classList.remove("hidden");
         }
 
@@ -213,71 +164,39 @@ async function checkAdminAccess() {
         return true;
 
     } catch (error) {
-
         console.error(
-            "❌ Erreur vérification admin :",
-            error
-        );
-
+            "❌ Erreur vérification admin :", error);
         alert("Erreur : " + error.message);
-
         return false;
     }
 }
 
-
-/* =========================================================
-   NAVIGATION ADMIN
-========================================================= */
+   //NAVIGATION ADMIN
 
 function showSection(sectionName) {
-
-    document
-        .querySelectorAll(".admin-section")
+    document.querySelectorAll(".admin-section")
         .forEach(section => {
-
             section.classList.add("hidden");
         });
 
-
-    const section =
-        document.getElementById(
-            `section-${sectionName}`
-        );
-
+    const section = document.getElementById(`section-${sectionName}`);
 
     if (section) {
-
         section.classList.remove("hidden");
     }
 
-
-    document
-        .querySelectorAll(".admin-menu")
-        .forEach(button => {
-
-            button.classList.remove(
-                "bg-white/10"
-            );
+    document.querySelectorAll(".admin-menu").forEach(button => {
+             button.classList.remove("bg-white/10" );
         });
 
-
-    const activeButton =
-        document.querySelector(
-            `.admin-menu[data-section="${sectionName}"]`
-        );
-
+    const activeButton = document.querySelector(`.admin-menu[data-section="${sectionName}"]`);
 
     if (activeButton) {
-
-        activeButton.classList.add(
-            "bg-white/10"
-        );
+        activeButton.classList.add("bg-white/10");
     }
 
 
     const titles = {
-
         dashboard: "Tableau de bord",
         reservations: "Réservations",
         users: "Membres",
@@ -285,53 +204,233 @@ function showSection(sectionName) {
         spaces: "Espaces"
     };
 
-
-    const pageTitle =
-        document.getElementById("pageTitle");
-
+    const pageTitle =  document.getElementById("pageTitle");
 
     if (pageTitle) {
-
-        pageTitle.textContent =
-            titles[sectionName] ||
-            "Administration";
+        pageTitle.textContent = titles[sectionName] || "Administration";
     }
-
 
     /* Chargement des données */
 
     if (sectionName === "reservations") {
-
         loadReservations();
     }
 
-
     if (sectionName === "users") {
-
         loadUsers();
     }
 
 
     if (sectionName === "activities") {
-
         loadActivities();
     }
 
+    if(sectionName === "programme"){
+        loadPrograms()
+    }
 
     closeMobileSidebar();
 }
 
 
-/* =========================================================
-   ACTIVITÉS
-========================================================= */
+
+
+//PROGRAMME
+
+function formatProgramDate(dateString){
+    if(!dateString) return;
+    const date = new Date(dateString + "T00:00:00");
+    return date.toLocaleDateString("fr-FR",{
+        day:"2-digit",
+        month:"2-digit",
+        year:"numeric"
+    });
+}
+
+//OPEN PROGRAM MODAL
+
+function openProgramModal(){
+    const modal = document.getElementById("programModal");
+    const form = document.getElementById("programForm");
+    form.reset();
+    document.getElementById("programId").value = "";
+    document.getElementById("programModalTitle").textContent = "Ajouter un programme";
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("programDate").value = today;
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+}
+
+//CLOSE PROGRAM MODAL
+
+function closeProgramModal(){
+    const modal = document.getElementById("programModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+}
+
+//AFFICHER PROGRAMME
+
+function renderPrograms(){
+    const container = document.getElementById("programList");
+    if(!allPrograms.length){
+        container.innerHTML = `
+            <div class = "col-span-full text-center py-10">
+            <i class = "bi bi-calendar-x text-4xl text-slate-300"></i>
+            <p class = "text-slate-500 mt-3">Aucun programme enregistré.</p>
+            </div>
+        `;
+        return;
+    }
+    container.innerHTML = allPrograms.map(program =>{
+        const formattedTime = program.time ? program.time.substring(0,5).replace(":","h"):"";
+        return `
+            <div class = "bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                <div class = "flex items-start justify-between">
+                    <div>
+                        <p class = "text-sm text-slate-500">${formatProgramDate(program.program_date)}</p>
+                        <p class = "text-2xl font-bold text-[#A71D78] mt-1">${escapeHtml(formattedTime)}</p>
+                    </div>
+                    <div class = "flex gap-2">
+                        <button onclick = "openEditProgram('${program.id}')" class = "w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200">
+                            <i class= "bi bi-pencil"></i>
+                        </button>
+                        <button onclick = "deleteProgram('${program.id}')" class = "w-9 h-9 rounded-lg  bg-red-50 text-red-600 hover:bg-red-100">
+                            <i class= "bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class = "mt-4">
+                    <h3 class ="font-bold text-lg">
+                        ${escapeHtml(program.title)}
+                    </h3>
+                    <p class = "text-sm text-slate-500 mt-1">
+                        <i class = "bi bi-geo-alt mr-1"></i>
+                        ${escapeHtml(program.location || "")}
+                    </p>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+
+//EDIT PROGRAM
+
+
+function openEditProgram(id){
+    const program = allPrograms.find(program =>program.id === id);
+    if(!program) return;
+    document.getElementById("programId").value = program.id;
+    document.getElementById("programTitle").value = program.title || "";
+    document.getElementById("programTime").value = program.time ? program.time.substring(0,5):"";
+    document.getElementById("programLocation").value = program.location || "";
+    document.getElementById("programDate").value = program.program_date || "";
+    document.getElementById("programColor").value = program.color || "sky";
+    document.getElementById("programModalTitle").textContent = "Modifier le programme";
+    const modal = document.getElementById("programModal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+}
+
+//DELETE PROGRAM
+
+async function deleteProgram(id) {
+    const confirmed = confirm("Voulez-vous vraiment supprimer ce programme?");
+    if(!confirmed) return;
+    try {
+        const {error} = await supabaseClient
+                        .from("programs")
+                        .delete()
+                        .eq("id",id);
+        if(error){
+            throw error;
+        }
+        await loadPrograms();
+    } catch (error) {
+        console.error("Erreur de suppression du programme:",error);
+        alert("Impossible de supprimer le programme.");
+        
+    }
+}
+
+
+
+let allPrograms = [];
+async function loadPrograms(){
+    try {
+        const {data,error} = await supabaseClient
+                            .from("programs")
+                            .select("id, title, time, location, color,program_date ,created_at")
+                            .order("program_date",{ascending:true})
+                            .order("time",{ascending:true});
+        if(error){
+            throw error;
+        }
+        allPrograms = data || [];
+        renderPrograms();
+    } catch (error) {
+        console.error("Erreur chargement programmes:",error);
+        
+    }
+}
+
+
+//SAVE PROGRAM
+
+async function saveProgram(){
+    const id = document.getElementById("programId").value;
+
+    const programData = {
+        title :document.getElementById("programTitle").value.trim(),
+        time:document.getElementById("programTime").value,
+        location:document.getElementById("programLocation").value.trim(),
+        program_date:document.getElementById("programDate").value,
+        color:document.getElementById("programColor").value,
+        updated_at:new Date().toISOString()
+
+    };
+    try {
+        let error;
+        if(id){
+            const result = await supabaseClient
+                            .from("programs")
+                            .update(programData)
+                            .eq("id",id);
+            error = result.error;
+        } else{
+            const result = await supabaseClient
+                            .from("programs")
+                            .insert(programData);
+            error = result.error;
+        }
+
+        if(error){
+            throw error;
+        }
+        closeProgramModal();
+        await loadPrograms();
+        console.log(id ? "Programme modifié":"Programme ajouté.");
+        
+    } catch (error) {
+        console.error("Une erreur est survenue lors de l'enregistrement du programme.");
+        
+    }
+}
+
+
+document.getElementById("programForm").addEventListener("submit",function(event){
+    event.preventDefault();
+    saveProgram();
+})
+
+
+   //ACTIVITÉS
+
 
 async function loadActivities() {
 
-    const grid =
-        document.getElementById("activitiesGrid");
-
-
+    const grid = document.getElementById("activitiesGrid");
     if (!grid) {
         return;
     }
@@ -354,12 +453,9 @@ async function loadActivities() {
     `;
 
 
-    const { data, error } =
-        await supabaseClient
+    const { data, error } = await supabaseClient
             .from("activities")
-            .select(
-                "id,name,category,description,icon,color,created_at"
-            )
+            .select("id,name,category,description,icon,color,created_at")
             .order("created_at", {
                 ascending: true
             });
@@ -367,19 +463,11 @@ async function loadActivities() {
 
     if (error) {
 
-        console.error(
-            "Erreur activités :",
-            error
-        );
+        console.error( "Erreur activités :", error);
 
         grid.innerHTML = `
-            <div
-                class="col-span-full text-center
-                py-10 text-red-500">
-
-                Impossible de récupérer
-                les activités.
-
+            <div class="col-span-full text-center py-10 text-red-500">
+                Impossible de récupérer les activités.
             </div>
         `;
 
@@ -390,14 +478,12 @@ async function loadActivities() {
     allActivities = data || [];
 
     renderActivities(allActivities);
-
     updateDashboardStats();
 }
 
 
-/* =========================================================
-   AFFICHER ACTIVITÉS
-========================================================= */
+   //AFFICHER ACTIVITÉS
+
 
 function renderActivities(activitiesList = []) {
 
@@ -420,83 +506,40 @@ function renderActivities(activitiesList = []) {
     grid.innerHTML =
         activitiesList.map(activity => {
 
-            const color =
-                getActivityColor(activity.color);
-
+            const color = getActivityColor(activity.color);
 
             return `
-                <div
-                    class="bg-white rounded-2xl
-                    overflow-hidden border border-slate-200
-                    shadow-sm">
+                <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
 
-                    <div
-                        class="${color}
-                        h-32 p-5 text-white">
-
-                        <div
-                            class="w-12 h-12 rounded-xl
-                            bg-white/20
-                            flex items-center
-                            justify-center">
-
+                    <div class="${color} h-32 p-5 text-white">
+                        <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
                             <i
-                                class="bi ${escapeHtml(
-                                    activity.icon
-                                )} text-2xl">
+                                class="bi ${escapeHtml(activity.icon)} text-2xl">
                             </i>
 
                         </div>
-
                     </div>
 
-
                     <div class="p-5">
-
-                        <span
-                            class="inline-block px-3 py-1
-                            rounded-full bg-slate-100
-                            text-xs font-bold">
-
+                        <span class="inline-block px-3 py-1 rounded-full bg-slate-100 text-xs font-bold">
                             ${escapeHtml(
                                 activity.category
                             )}
 
                         </span>
 
-
-                        <h3
-                            class="font-black text-xl mt-3">
-
-                            ${escapeHtml(
-                                activity.name
-                            )}
+                        <h3 class="font-black text-xl mt-3">
+                            ${escapeHtml(activity.name )}
 
                         </h3>
 
-
-                        <p
-                            class="text-slate-500
-                            text-sm mt-2
-                            min-h-[40px]">
-
-                            ${escapeHtml(
-                                activity.description
-                            )}
-
+                        <p class="text-slate-500 text-sm mt-2 min-h-[40px]">
+                            ${escapeHtml(activity.description)}
                         </p>
 
-
-                        <div
-                            class="flex gap-2 mt-5">
-
-                            <button
-                                class="edit-activity flex-1
-                                px-3 py-2 rounded-xl
-                                bg-slate-100
-                                hover:bg-slate-200
-                                font-bold text-sm"
-                                data-id="${activity.id}">
+                        <div class="flex gap-2 mt-5">
+                            <button  class="edit-activity flex-1 px-3 py-2 rounded-xl bg-slate-100
+                                     hover:bg-slate-200 font-bold text-sm" data-id="${activity.id}">
 
                                 <i class="bi bi-pencil"></i>
                                 Modifier
@@ -504,21 +547,12 @@ function renderActivities(activitiesList = []) {
                             </button>
 
 
-                            <button
-                                class="delete-activity
-                                px-3 py-2 rounded-xl
-                                bg-red-50 text-red-600
-                                hover:bg-red-100"
-                                data-id="${activity.id}">
-
+                            <button class="delete-activity px-3 py-2 rounded-xl bg-red-50 text-red-600
+                                     hover:bg-red-100" data-id="${activity.id}">
                                 <i class="bi bi-trash"></i>
-
                             </button>
-
                         </div>
-
                     </div>
-
                 </div>
             `;
 
@@ -527,17 +561,9 @@ function renderActivities(activitiesList = []) {
 
     /* BOUTON MODIFIER */
 
-    document
-        .querySelectorAll(".edit-activity")
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    const id =
-                        button.dataset.id;
-
+    document.querySelectorAll(".edit-activity")
+        .forEach(button => {button.addEventListener("click",() => {
+                    const id = button.dataset.id;
                     openEditActivity(id);
                 }
             );
@@ -546,17 +572,9 @@ function renderActivities(activitiesList = []) {
 
     /* BOUTON SUPPRIMER */
 
-    document
-        .querySelectorAll(".delete-activity")
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    const id =
-                        button.dataset.id;
-
+    document.querySelectorAll(".delete-activity").forEach(button => {
+            button.addEventListener("click",() => {
+                    const id = button.dataset.id;
                     deleteActivity(id);
                 }
             );
@@ -564,42 +582,28 @@ function renderActivities(activitiesList = []) {
 }
 
 
-/* =========================================================
-   AJOUTER ACTIVITÉ
-========================================================= */
+
+//   AJOUTER ACTIVITÉ
+
 
 function openActivities() {
 
-    const form =
-        document.getElementById("activityForm");
+    const form = document.getElementById("activityForm");
 
     if (form) {
         form.reset();
     }
-
-
-    const id =
-        document.getElementById("activityId");
-
-    const title =
-        document.getElementById(
-            "activityModalTitle"
-        );
-
-    const modal =
-        document.getElementById(
-            "activityModal"
-        );
+    const id = document.getElementById("activityId");
+    const title = document.getElementById("activityModalTitle");
+    const modal = document.getElementById("activityModal");
 
 
     if (id) {
         id.value = "";
     }
 
-
     if (title) {
-        title.textContent =
-            "Ajouter une activité";
+        title.textContent ="Ajouter une activité";
     }
 
 
@@ -608,159 +612,80 @@ function openActivities() {
     }
 }
 
+  // MODIFIER ACTIVITÉ
 
-/* =========================================================
-   MODIFIER ACTIVITÉ
-========================================================= */
 
 function openEditActivity(id) {
-
-    const activity =
-        allActivities.find(
-            item =>
-                String(item.id) === String(id)
+    const activity = allActivities.find(
+            item => String(item.id) === String(id)
         );
 
-
     if (!activity) {
-
         alert("Activité introuvable.");
-
         return;
     }
 
+    document.getElementById("activityId").value = activity.id;
 
-    document.getElementById(
-        "activityId"
-    ).value = activity.id;
+    document.getElementById("activityName").value = activity.name || "";
 
+    document.getElementById("activityCategory").value = activity.category || "";
 
-    document.getElementById(
-        "activityName"
-    ).value = activity.name || "";
+    document.getElementById("activityDescription").value = activity.description || "";
 
+    document.getElementById("activityIcon").value = activity.icon || "bi-calendar-event";
 
-    document.getElementById(
-        "activityCategory"
-    ).value = activity.category || "";
+    document.getElementById("activityColor").value = activity.color || "bg-gradient-to-br from-blue-500 to-cyan-500";
 
+    document.getElementById("activityModalTitle").textContent = "Modifier l'activité";
 
-    document.getElementById(
-        "activityDescription"
-    ).value = activity.description || "";
-
-
-    document.getElementById(
-        "activityIcon"
-    ).value =
-        activity.icon || "bi-calendar-event";
-
-
-    document.getElementById(
-        "activityColor"
-    ).value =
-        activity.color ||
-        "bg-gradient-to-br from-blue-500 to-cyan-500";
-
-
-    document.getElementById(
-        "activityModalTitle"
-    ).textContent =
-        "Modifier l'activité";
-
-
-    document.getElementById(
-        "activityModal"
-    ).classList.remove("hidden");
+    document.getElementById("activityModal").classList.remove("hidden");
 }
 
 
-/* =========================================================
-   FERMER MODAL
-========================================================= */
+
+  // FERMER MODAL
+
 
 function closeActivityModal() {
-
-    const modal =
-        document.getElementById(
-            "activityModal"
-        );
-
+    const modal = document.getElementById("activityModal");
 
     if (modal) {
-
         modal.classList.add("hidden");
     }
 }
 
 
-/* =========================================================
-   ENREGISTRER ACTIVITÉ
-========================================================= */
+
+  // ENREGISTRER ACTIVITÉ
+
 
 async function saveActivity(event) {
-
     event.preventDefault();
+    const id = document.getElementById("activityId").value;
 
+    const name = document.getElementById("activityName").value.trim();
 
-    const id =
-        document.getElementById(
-            "activityId"
-        ).value;
+    const category = document.getElementById("activityCategory").value.trim();
 
+    const description = document.getElementById("activityDescription").value.trim();
 
-    const name =
-        document.getElementById(
-            "activityName"
-        ).value.trim();
+    const icon = document.getElementById("activityIcon").value.trim();
 
-
-    const category =
-        document.getElementById(
-            "activityCategory"
-        ).value.trim();
-
-
-    const description =
-        document.getElementById(
-            "activityDescription"
-        ).value.trim();
-
-
-    const icon =
-        document.getElementById(
-            "activityIcon"
-        ).value.trim();
-
-
-    const color =
-        document.getElementById(
-            "activityColor"
-        ).value;
+    const color = document.getElementById("activityColor").value;
 
 
     if (!name || !category) {
-
-        alert(
-            "Remplissez le nom et la catégorie."
-        );
-
+        alert("Remplissez le nom et la catégorie.");
         return;
     }
 
 
-    const saveButton =
-        document.getElementById(
-            "saveActivityButton"
-        );
-
+    const saveButton = document.getElementById("saveActivityButton");
 
     if (saveButton) {
-
         saveButton.disabled = true;
-
-        saveButton.textContent =
-            "Enregistrement...";
+        saveButton.textContent = "Enregistrement...";
     }
 
 
@@ -811,15 +736,9 @@ async function saveActivity(event) {
 
     } catch (error) {
 
-        console.error(
-            "Erreur d'enregistrement :",
-            error
-        );
+        console.error("Erreur d'enregistrement :", error);
 
-        alert(
-            "Impossible d'enregistrer l'activité :\n" +
-            error.message
-        );
+        alert("Impossible d'enregistrer l'activité :\n" + error.message);
 
 
     } finally {
@@ -827,17 +746,14 @@ async function saveActivity(event) {
         if (saveButton) {
 
             saveButton.disabled = false;
-
-            saveButton.textContent =
-                "Enregistrer";
+            saveButton.textContent ="Enregistrer";
         }
     }
 }
 
 
-/* =========================================================
-   SUPPRIMER ACTIVITÉ
-========================================================= */
+   //SUPPRIMER ACTIVITÉ
+
 
 async function deleteActivity(id) {
 
@@ -846,13 +762,11 @@ async function deleteActivity(id) {
         return;
     }
 
-
     const confirmation =confirm(`Voulez-vous vraiment supprimer "${activity.name}" ?`);
 
     if (!confirmation) {
         return;
     }
-
 
     try {
 
@@ -862,7 +776,6 @@ async function deleteActivity(id) {
             throw error;
         }
 
-
         alert("Activité supprimée avec succès.");
 
         await loadActivities();
@@ -871,22 +784,16 @@ async function deleteActivity(id) {
 
     } catch (error) {
 
-        console.error(
-            "Erreur de suppression :",
-            error
-        );
+        console.error("Erreur de suppression :",error);
 
-        alert(
-            "Impossible de supprimer l'activité :\n" +
-            error.message
-        );
+        alert("Impossible de supprimer l'activité :\n" + error.message);
     }
 }
 
 
-/* =========================================================
-   RÉSERVATIONS
-========================================================= */
+
+   //RÉSERVATIONS
+
 
 async function loadReservations() {
     const table =document.getElementById("reservationsTable");
@@ -1021,11 +928,6 @@ async function toggleReservationFinished(reservationId,isFinished){
         
     }
 }
-
-
-
-
-
 
 
 async function deleteReservation(reservationId) {

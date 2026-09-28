@@ -505,6 +505,89 @@ async function loadCurrentUser() {
     return currentUser;
 }
 
+//PROGRAMME D'AUJOURD'HUI
+
+
+function getProgramsColor(color){
+    const colors = {
+        sky:"text-sky-600",
+        green:"text-green-600",
+        orange:"text-orange-600",
+        blue:"text-blue-600",
+        purple:"text-purple-600",
+        red:"text-red-600"
+    };
+    return colors[color] || "text-sky-600";
+}
+
+function renderTodayProgram(programs){
+    const container = document.getElementById("todayProgram");
+    if(!programs.length){
+        container.innerHTML = `
+            <div class = "text-center py-6">
+                <i class = "bi bi-calendar-x text-3xl text-slate-300"></i>
+                <p class = "text-sm text-slate-500 mt-2">Aucun programme prévu pour l'aujourd'hui.</p>
+            </div>
+        `;
+        return;
+
+    }
+    container.innerHTML = programs.map(program =>{
+        const colorClass = getProgramsColor(program.color);
+        const formattedTime = program.time ? program.time.substring(0,5).replace(":","h"):"";
+        return `
+            <div class = "flex gap-4 p-4 rounded-2xl bg-slate-50">
+                <div class = "font-bold ${colorClass}">
+                    ${escapeHtml(formattedTime)}
+                </div>
+                <div>
+                    <p class = "font-semibold">
+                        ${escapeHtml(program.title)}
+                    </p>
+                    <p class = "text-sm text-slate-500">${escapeHtml(program.location || "")}</p>
+                </div>
+            </div>
+        `;
+    }).join("");
+   
+    
+}
+
+
+
+async function loadTodayProgram(){
+    const programmContainer = document.getElementById("todayProgram");
+    if(!programmContainer){
+        return;
+    }
+    try {
+        const today  = new Date().toISOString().split("T")[0];
+
+        const {data,error} = await supabaseClient.from("programs")
+                            .select("id, title, time, location, color")
+                            .eq("program_date", today)
+                            .order("time",{ascending:true});
+        if (error) {
+            throw error;
+        }
+        renderTodayProgram(data || []);
+    } catch (error) {
+        console.error("Erreur chargement programme:",error);
+        programmContainer.innerHTML = `
+            <p class = "text-sm text-slate-500 text-center py-4">
+                Impossible de charger le programme.
+            </p>
+        `    
+    }
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -1151,10 +1234,7 @@ async function handleReservationSubmit(
 
 }
 
-
-// =====================================================
 // VOS ACTIVITES
-// =====================================================
 
 async function getMyReservations() {
 
@@ -1188,9 +1268,9 @@ async function getMyReservations() {
 }
 
 
-// =====================================================
+
 // OUVRIR VOS ACTIVITES
-// =====================================================
+
 
 async function openActivities() {
 
@@ -1331,6 +1411,7 @@ document.addEventListener("keydown", event => {
 
 
 document.addEventListener("DOMContentLoaded",async () => {
+        loadTodayProgram();
         initHeroSlider()
         initMobileMenu();
         initCalendarButtons();
