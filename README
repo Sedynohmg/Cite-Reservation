@@ -1,27 +1,47 @@
-<div class="relative">
-    <div class="bg-white rounded-3xl shadow-2xl p-6 max-w-md mx-auto">
+async function openReservation(activity = "") {
+    if (!currentUser) {
+        showAuth();
+        return;
+    }
 
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <p class="text-sm text-slate-500">Aujourd'hui</p>
-                <h3 class="text-xl font-bold">Programme</h3>
-            </div>
+    const modal = document.getElementById("reservationModal");
+    if (!modal) {
+        return;
+    }
 
-            <div class="w-12 h-12 bg-[#A71D78] rounded-xl flex items-center justify-center">
-                <i class="bi bi-calendar3 text-white text-2xl"></i>
-            </div>
-        </div>
+    const activityInput = document.getElementById("activity");
 
-        <div id="todayProgram" class="space-y-4">
-            <!-- Programmes chargés depuis Supabase -->
-        </div>
+    if (activityInput && activity) {
+        activityInput.value = activity;
+    }
 
-        <button
-            onclick="openReservation()"
-            class="w-full mt-6 bg-[#A71D78] hover:bg-[#8F1967] text-white py-3 rounded-xl font-bold cursor-pointer"
-        >
-            Réserver une activité
-        </button>
+    selectedDate = null;
+    selectedTime = null;
 
-    </div>
-</div>
+    const dateInput = document.getElementById("date");
+    const timeInput = document.getElementById("time");
+
+    if (dateInput) {
+        dateInput.value = "";
+    }
+
+    if (timeInput) {
+        timeInput.value = "";
+    }
+
+    resetSubmitButton();
+
+    // AFFICHER LE MODAL IMMÉDIATEMENT
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    document.body.classList.add("overflow-hidden");
+
+    // Affichage immédiat du calendrier
+    renderCalendar();
+
+    // Affichage des créneaux
+    renderTimeSlots();
+
+    // Charger les réservations du mois en arrière-plan
+    await loadCalendarReservations();
+}

@@ -125,11 +125,52 @@
                     <img  src="src/images/cite-logo.png"   alt="Logo" class="h-18 w-auto object-contain" >
                 </a>
                 <nav class="hidden md:flex items-center gap-7 text-sm font-medium">
-                    <a href="#accueil" class="hover:text-[#A71D78] transition">Accueil</a>
-                    <a href="#activites" class="hover:text-[#A71D78] transition">Activités</a>
-                    <a href="#membres" class="hover:text-[#A71D78] transition">Membres</a>
-                    <a href="#espaces" class="hover:text-[#A71D78]   transition">Espaces</a>
-                    <a href="#contact" class="hover:text-[#A71D78] transition">Contact</a>
+                    <a href="#accueil" 
+                    class="relative py-2 transition-colors duration-300  hover:text-[#A71D78] 
+                           after:content-[''] after:absolute after:left-1/2 after:bottom-0
+                           after:-translate-x-1/2
+                           after:w-0 after:h-[3px] after:bg-[#A71D78] 
+                           after:transition-all after:duration-300
+                           hover:after:w-full">
+                        Accueil
+                    </a>
+                    <a href="#activities" 
+                    class="relative py-2 transition-colors duration-300  hover:text-[#A71D78] 
+                           after:content-[''] after:absolute after:left-1/2 after:bottom-0
+                           after:-translate-x-1/2
+                           after:w-0 after:h-[3px] after:bg-[#A71D78] 
+                           after:transition-all after:duration-300
+                           hover:after:w-full">
+                        Activités
+                    </a>
+                    <a href="#membres" 
+                    class="relative py-2 transition-colors duration-300  hover:text-[#A71D78] 
+                           after:content-[''] after:absolute after:left-1/2 after:bottom-0
+                           after:-translate-x-1/2
+                           after:w-0 after:h-[3px] after:bg-[#A71D78] 
+                           after:transition-all after:duration-300
+                           hover:after:w-full">
+                        Membres
+                    </a>
+                    <a href="#espaces" 
+                    class="relative py-2 transition-colors duration-300  hover:text-[#A71D78] 
+                           after:content-[''] after:absolute after:left-1/2 after:bottom-0
+                           after:-translate-x-1/2
+                           after:w-0 after:h-[3px] after:bg-[#A71D78] 
+                           after:transition-all after:duration-300
+                           hover:after:w-full">
+                        Espaces
+                    </a>
+                    <a href="#contact" 
+                    class="relative py-2 transition-colors duration-300  hover:text-[#A71D78] 
+                           after:content-[''] after:absolute after:left-1/2 after:bottom-0
+                           after:-translate-x-1/2
+                           after:w-0 after:h-[3px] after:bg-[#A71D78] 
+                           after:transition-all after:duration-300
+                           hover:after:w-full">
+                        Contact
+                    </a>
+                    
                     <button onclick="openActivities()" class="hidden sm:flex bg-none hover:text-[#A71D78]  font-semibold transition cursor-pointer">Vos activités</button>
                 </nav>
                 <div class="flex items-center gap-3">
@@ -196,7 +237,7 @@
                             <span class="text-orange-400">partager.</span>
                         </h1>
                         <p class="mt-6 text-lg text-slate-300 max-w-xl">
-                             Bienvenue chez CiteActive, un espace communautaire pensé pour les enfants, les jeunes, les adultes et les familles.
+                             Bienvenue chez An-trano, un espace communautaire pensé pour les enfants, les jeunes, les adultes et les familles.
                         </p>
                         <div class="flex flex-wrap gap-4 mt-8">
                             <a href="#membres" class="bg-[#A71D78] hover:bg-[#8F1967] px-6 py-3 rounded-xl font-bold transition">
@@ -212,7 +253,7 @@
                                 <p class="text-sm text-slate-400">membres</p>
                             </div>
                             <div>
-                                <p class="text-3xl font-black">20+</p>
+                                <p class="text-3xl font-black">10+</p>
                                 <p class="text-sm text-slate-400">activités</p>
                             </div>
                             <div>
@@ -235,33 +276,7 @@
                                 </div>                        
                             </div>
                             <div id="todayProgram" class="space-y-2">
-
                             </div>
-                            <!-- <div class="space-y-4">
-                                <div class="flex gap-4 p-4 rounded-2xl bg-slate-50">
-                                    <div class="font-bold text-sky-600">
-                                        11h
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold">Jeux de société</p>
-                                        <p class="text-sm text-slate-500">Espace commun</p>
-                                    </div>
-                                </div>
-                                <div class="flex gap-4 p-4 rounded-2xl bg-slate-50">
-                                    <div class="font-bold text-green-600">12h</div>
-                                    <div>
-                                        <p class="font-semibold">Coin lecture</p>
-                                        <p class="text-sm text-slate-500">Livre Kasaboky</p>
-                                    </div>
-                                </div>
-                                <div class="flex gap-4 p-4 rounded-2xl bg-slate-50">
-                                    <div class="font-bold text-orange-600">13h</div>
-                                    <div>
-                                        <p class="font-semibold">PS5</p>
-                                        <p class="text-sm text-slate-500">Salle numérique</p>
-                                    </div>
-                                </div>
-                            </div> -->
                             <button onclick="openReservation()" class="w-full mt-6 bg-[#A71D78] hover:bg-[#8F1967] text-white py-3 rounded-xl font-bold cursor-pointer">
                                 Réserver une activité
                             </button>
@@ -591,7 +606,7 @@
             </div>
         </div>
         <div class="border-t border-slate-800 mt-12 pt-6 text-center text-sm text-slate-500">
-            © 2026 CIDC. Tous droits réservés.
+            © 2026 An-trano. Tous droits réservés.
         </div>
     </div>
    </footer>
@@ -679,27 +694,13 @@
                         </button>
                     </div>
                     <div class="grid grid-cols-7 text-center text-xs font-bold text-slate-500 border-b">
-                        <div class="p-3">
-                            Lun
-                        </div>
-                        <div class="p-3">
-                            Mar
-                        </div>
-                        <div class="p-3">
-                            Mer
-                        </div>
-                        <div class="p-3">
-                            Jeu
-                        </div>
-                        <div class="p-3">
-                            Ven
-                        </div>
-                        <div class="p-3">
-                            Sam
-                        </div>
-                        <div class="p-3">
-                            Dim
-                        </div>
+                        <div class="p-3">Lun</div>
+                        <div class="p-3">Mar</div>
+                        <div class="p-3">Mer</div>
+                        <div class="p-3">Jeu</div>
+                        <div class="p-3">Ven</div>
+                        <div class="p-3">Sam</div>
+                        <div class="p-3">Dim</div>
                     </div>
                     <div id="calendar" class="grid grid-cols-7">
                     </div>

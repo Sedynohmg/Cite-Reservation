@@ -6,8 +6,6 @@ let allReservations = [];
 let allUsers = [];
 let allActivities = [];
 
-  // OUTILS
-
 function escapeHtml(value) {
     return String(value ?? "")
         .replace(/&/g, "&amp;")
@@ -16,7 +14,6 @@ function escapeHtml(value) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
-
 
 function formatDate(dateString) {
     if (!dateString) {
@@ -64,17 +61,13 @@ function getActivityColor(color) {
         || "bg-gradient-to-br from-blue-500 to-cyan-500";
 }
 
-
-
  //  VÉRIFICATION ADMIN
-
 
 async function checkAdminAccess() {
 
     try {
 
         console.log("1. Vérification de l'utilisateur...");
-
         const { data, error } = await supabaseClient.auth.getUser();
 
         console.log("Auth data :", data);
@@ -128,9 +121,7 @@ async function checkAdminAccess() {
 
             console.log("❌ L'utilisateur n'est pas administrateur");
 
-            alert(
-                "Accès refusé.\nRôle actuel : " + adminProfile.role);
-
+            alert("Accès refusé.\nRôle actuel : " + adminProfile.role);
             window.location.href = "../index.html";
             return false;
         }
@@ -159,7 +150,6 @@ async function checkAdminAccess() {
         if (adminApp) {
             adminApp.classList.remove("hidden");
         }
-
 
         return true;
 
@@ -220,7 +210,6 @@ function showSection(sectionName) {
         loadUsers();
     }
 
-
     if (sectionName === "activities") {
         loadActivities();
     }
@@ -231,9 +220,6 @@ function showSection(sectionName) {
 
     closeMobileSidebar();
 }
-
-
-
 
 //PROGRAMME
 
@@ -314,9 +300,7 @@ function renderPrograms(){
     }).join("");
 }
 
-
 //EDIT PROGRAM
-
 
 function openEditProgram(id){
     const program = allPrograms.find(program =>program.id === id);
@@ -418,18 +402,14 @@ async function saveProgram(){
     }
 }
 
-
 document.getElementById("programForm").addEventListener("submit",function(event){
     event.preventDefault();
     saveProgram();
 })
 
-
    //ACTIVITÉS
 
-
 async function loadActivities() {
-
     const grid = document.getElementById("activitiesGrid");
     if (!grid) {
         return;
@@ -464,7 +444,6 @@ async function loadActivities() {
     if (error) {
 
         console.error( "Erreur activités :", error);
-
         grid.innerHTML = `
             <div class="col-span-full text-center py-10 text-red-500">
                 Impossible de récupérer les activités.
@@ -481,9 +460,7 @@ async function loadActivities() {
     updateDashboardStats();
 }
 
-
    //AFFICHER ACTIVITÉS
-
 
 function renderActivities(activitiesList = []) {
 
@@ -498,16 +475,13 @@ function renderActivities(activitiesList = []) {
                 Aucune activité.
             </div>
         `;
-
         return;
     }
 
 
     grid.innerHTML =
         activitiesList.map(activity => {
-
             const color = getActivityColor(activity.color);
-
             return `
                 <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
 
@@ -582,9 +556,7 @@ function renderActivities(activitiesList = []) {
 }
 
 
-
 //   AJOUTER ACTIVITÉ
-
 
 function openActivities() {
 
@@ -596,7 +568,6 @@ function openActivities() {
     const id = document.getElementById("activityId");
     const title = document.getElementById("activityModalTitle");
     const modal = document.getElementById("activityModal");
-
 
     if (id) {
         id.value = "";
@@ -626,26 +597,16 @@ function openEditActivity(id) {
     }
 
     document.getElementById("activityId").value = activity.id;
-
     document.getElementById("activityName").value = activity.name || "";
-
     document.getElementById("activityCategory").value = activity.category || "";
-
     document.getElementById("activityDescription").value = activity.description || "";
-
     document.getElementById("activityIcon").value = activity.icon || "bi-calendar-event";
-
     document.getElementById("activityColor").value = activity.color || "bg-gradient-to-br from-blue-500 to-cyan-500";
-
     document.getElementById("activityModalTitle").textContent = "Modifier l'activité";
-
     document.getElementById("activityModal").classList.remove("hidden");
 }
 
-
-
   // FERMER MODAL
-
 
 function closeActivityModal() {
     const modal = document.getElementById("activityModal");
@@ -655,25 +616,16 @@ function closeActivityModal() {
     }
 }
 
-
-
   // ENREGISTRER ACTIVITÉ
-
 
 async function saveActivity(event) {
     event.preventDefault();
     const id = document.getElementById("activityId").value;
-
     const name = document.getElementById("activityName").value.trim();
-
     const category = document.getElementById("activityCategory").value.trim();
-
     const description = document.getElementById("activityDescription").value.trim();
-
     const icon = document.getElementById("activityIcon").value.trim();
-
     const color = document.getElementById("activityColor").value;
-
 
     if (!name || !category) {
         alert("Remplissez le nom et la catégorie.");
@@ -692,13 +644,7 @@ async function saveActivity(event) {
     try {
 
         if (id) {const { error } =await supabaseClient.from("activities")
-                    .update({
-                        name,
-                        category,
-                        description,
-                        icon,
-                        color,
-                        updated_at: new Date().toISOString()})
+                    .update({ name, category, description, icon, color, updated_at: new Date().toISOString()})
                     .eq("id", id);
             if (error) {
                 throw error;
@@ -708,62 +654,42 @@ async function saveActivity(event) {
         } else {
 
                 const { error } = await supabaseClient.from("activities").insert({
-                        name,
-                        category,
-                        description,
-                        icon,
-                        color
-                    });
-
+                        name,category,description,icon,color});
 
             if (error) {
                 throw error;
             }
 
-
-            alert(
-                "Activité bien ajoutée !"
-            );
+            alert("Activité bien ajoutée !");
         }
 
 
         closeActivityModal();
-
         await loadActivities();
-
         await updateDashboardStats();
-
 
     } catch (error) {
 
         console.error("Erreur d'enregistrement :", error);
-
         alert("Impossible d'enregistrer l'activité :\n" + error.message);
 
-
     } finally {
-
         if (saveButton) {
-
             saveButton.disabled = false;
             saveButton.textContent ="Enregistrer";
         }
     }
 }
 
-
    //SUPPRIMER ACTIVITÉ
 
-
 async function deleteActivity(id) {
-
     const activity = allActivities.find(item => String(item.id) === String(id));
     if (!activity) {
         return;
     }
 
     const confirmation =confirm(`Voulez-vous vraiment supprimer "${activity.name}" ?`);
-
     if (!confirmation) {
         return;
     }
@@ -771,29 +697,22 @@ async function deleteActivity(id) {
     try {
 
         const { error } = await supabaseClient.from("activities").delete()
-                .eq("id",String(id));
+                        .eq("id",String(id));
         if (error) {
             throw error;
         }
 
         alert("Activité supprimée avec succès.");
-
         await loadActivities();
         await updateDashboardStats();
 
-
     } catch (error) {
-
         console.error("Erreur de suppression :",error);
-
         alert("Impossible de supprimer l'activité :\n" + error.message);
     }
 }
 
-
-
    //RÉSERVATIONS
-
 
 async function loadReservations() {
     const table =document.getElementById("reservationsTable");
@@ -914,10 +833,7 @@ async function toggleReservationFinished(reservationId,isFinished){
         if(error){
             throw error;
         }
-        console.log(isFinished
-            ?"Réservation terminée."
-            :"Réservation remise en cours"
-        );
+        console.log(isFinished ?"Réservation terminée.":"Réservation remise en cours");
         await loadReservations();
         await loadRecentReservations();
         await updateDashboardStats();
@@ -928,7 +844,6 @@ async function toggleReservationFinished(reservationId,isFinished){
         
     }
 }
-
 
 async function deleteReservation(reservationId) {
     const confirmation = confirm("Voulez-vous vraiment supprimer cette réservation terminée?");
@@ -948,9 +863,7 @@ async function deleteReservation(reservationId) {
     }
 }
 
-
   /* AFFICHER RÉSERVATIONS*/
-
 
 function renderReservations(reservations = []) {
     const table =document.getElementById("reservationsTable");
@@ -962,9 +875,7 @@ function renderReservations(reservations = []) {
         table.innerHTML = `
             <tr>
                 <td colspan="10" class="text-center py-10 text-slate-400">
-
                     Aucune réservation.
-
                 </td>
             </tr>
         `;
@@ -972,12 +883,9 @@ function renderReservations(reservations = []) {
         return;
     }
 
-
-    table.innerHTML =
-        reservations.map(
+    table.innerHTML = reservations.map(
             reservation => {const started = reservation.is_started === true;
                 const finished = reservation.is_finished === true;
-
                 let statusHtml = "";
                 if(finished){
                     statusHtml = `
@@ -1002,7 +910,7 @@ function renderReservations(reservations = []) {
                 const validationHtml = reservation.validated === true ?`
                 <div class = "flex items-center gap-2">
                     <input type = "checkbox" checked onchange = "toggleReservationValidation('${reservation.id}',this.checked)
-                                class = "w-5 h-5 accent-[#A71D78] cursor-pointer">
+                                    class = "w-5 h-5 accent-[#A71D78] cursor-pointer">
                     <span class = "text-green-600 text-sm font-semibold">Validée</span>
                     
                 </div>
@@ -1061,12 +969,10 @@ function renderReservations(reservations = []) {
 
                         </td>
 
-
                         <td
                             class="px-5 py-4 text-sm">
                             ${escapeHtml(formatDate(reservation.date))}
                         </td>
-
 
                         <td
                             class="px-5 py-4 text-sm">
@@ -1077,7 +983,6 @@ function renderReservations(reservations = []) {
                             ${statusHtml}
                         </td>
                         
-
                         <td class="px-5 py-4">
                             <span
                                 class="text-xs text-slate-400">
@@ -1097,7 +1002,6 @@ function renderReservations(reservations = []) {
                         </td>
 
                         <td class = "px-5 py-4">${deleteHtml}</td>
-
                         <td class = "px-5 py-4">${startCheckboxHtml}</td>
                         <td class = "px-5 py-4">${finishCheckboxHtml}</td>
                     </tr>
@@ -1106,106 +1010,70 @@ function renderReservations(reservations = []) {
         ).join("");
 }
 
-
   /* MEMBRES*/
 
-
 async function loadUsers() {
-
     const table = document.getElementById("usersTable");
-
     if (!table) {
         return;
     }
 
-
     table.innerHTML = `
         <tr>
-
             <td
                 colspan="3"
                 class="text-center py-10
                 text-slate-400">
-
                 Chargement des membres...
-
             </td>
 
         </tr>
     `;
 
-
-    const { data, error } =
-        await supabaseClient
+    const { data, error } = await supabaseClient
             .from("profiles")
             .select("id,name,phone,role")
-            .order("name", {
-                ascending: true
-            });
-
+            .order("name", {ascending: true});
 
     if (error) {
 
-        console.error(
-            "Erreur utilisateurs :",
-            error
-        );
-
-
+        console.error("Erreur utilisateurs :",error);
         table.innerHTML = `
             <tr>
-
                 <td
                     colspan="3"
                     class="text-center py-10
                     text-red-500">
-
                     Impossible de récupérer
                     les membres.
-
                 </td>
-
             </tr>
         `;
-
         return;
     }
 
-
     allUsers = data || [];
-
     renderUsers(allUsers);
-
     updateDashboardStats();
 }
 
-
    //AFFICHER MEMBRES
 
-
 function renderUsers(users = []) {
-
     const table = document.getElementById("usersTable");
-
     if (!table) {
         return;
     }
 
-
     if (users.length === 0) {
-
         table.innerHTML = `
             <tr>
-
                 <td
                     colspan="3"
                     class="text-center py-10
                     text-slate-400">
-
                     Aucun membre
-
                 </td>
-
             </tr>
         `;
 
@@ -1213,54 +1081,25 @@ function renderUsers(users = []) {
     }
 
 
-    table.innerHTML =
-        users.map(
-            user => `
-
-                <tr
-                    class="border-t border-slate-100
-                    hover:bg-slate-50">
-
+    table.innerHTML = users.map(user => `
+                <tr class="border-t border-slate-100 hover:bg-slate-50">
                     <td class="px-5 py-4">
-
                         <p class="font-semibold">
-
-                            ${escapeHtml(
-                                user.name ||
-                                "Sans nom"
-                            )}
-
+                            ${escapeHtml(user.name || "Sans nom")}
                         </p>
-
-
-                        <p
-                            class="text-xs text-slate-400
-                            mt-1">
-
+                        <p class="text-xs text-slate-400 mt-1">
                             ${escapeHtml(
                                 user.id
                             )}
-
                         </p>
-
                     </td>
 
-
-                    <td
-                        class="px-5 py-4 text-sm">
-
-                        ${escapeHtml(
-                            user.phone || "-"
-                        )}
-
+                    <td class="px-5 py-4 text-sm">
+                        ${escapeHtml(user.phone || "-")}
                     </td>
-
 
                     <td class="px-5 py-4">
-
-                        ${
-                            user.role === "admin"
-
+                        ${user.role === "admin"
                             ? `
                                 <span
                                     class="px-4 py-1
@@ -1268,162 +1107,87 @@ function renderUsers(users = []) {
                                     bg-purple-100
                                     text-purple-700
                                     text-xs font-bold">
-
                                     Administrateur
 
                                 </span>
                             `
-
                             : `
-
                                 <span
                                     class="px-3 py-1
                                     rounded-full
                                     bg-slate-100
                                     text-slate-600
                                     text-xs font-bold">
-
                                     Membre
-
                                 </span>
                             `
                         }
-
                     </td>
-
                 </tr>
-
             `
         ).join("");
 }
 
-
-/* =========================================================
-   STATISTIQUES
-========================================================= */
+   //STATISTIQUES
 
 async function updateDashboardStats() {
-
-    const {count: usersCount} =await supabaseClient
+    const {count: usersCount} = await supabaseClient
             .from("profiles")
-            .select(
-                "id",
-                {
-                    count: "exact",
-                    head: true
-                }
-            );
-
-
-    const {
-        count: reservationsCount
-    } =
+            .select("id", {count: "exact", head: true});
+    const {count: reservationsCount} =
         await supabaseClient
             .from("reservations")
-            .select(
-                "id",
-                {
-                    count: "exact",
-                    head: true
-                }
-            );
+            .select("id",{count: "exact", head: true});
 
-
-    const {count: startedCount} =
-        await supabaseClient
+    const {count: startedCount} = await supabaseClient
             .from("reservations")
-            .select(
-                "id",
-                {count: "exact", head: true}
-            )
+            .select("id", {count: "exact", head: true})
             .eq("is_started",true);
+
     const usersElement = document.getElementById("dashboardUsersCount");
     const reservationsElement = document.getElementById("dashboardReservationsCount");
     const activitiesElement = document.getElementById("dashboardActivitiesCount");
-
-
     const startedElement = document.getElementById("dashboardStartedCount");
 
-
     if (usersElement) {
-
-        usersElement.textContent =
-            usersCount ?? 0;
+        usersElement.textContent = usersCount ?? 0;
     }
-
 
     if (reservationsElement) {
-
-        reservationsElement.textContent =
-            reservationsCount ?? 0;
+        reservationsElement.textContent = reservationsCount ?? 0;
     }
-
 
     if (activitiesElement) {
-
-        activitiesElement.textContent =
-            allActivities.length;
+        activitiesElement.textContent = allActivities.length;
     }
 
-
     if (startedElement) {
-
-        startedElement.textContent =
-            startedCount ?? 0;
+        startedElement.textContent = startedCount ?? 0;
     }
 }
 
-
-/* =========================================================
-   RÉSERVATIONS RÉCENTES
-========================================================= */
+   //RÉSERVATIONS RÉCENTES
 
 async function loadRecentReservations() {
-
-    const container =
-        document.getElementById(
-            "recentReservations"
-        );
-
+    const container = document.getElementById("recentReservations");
 
     if (!container) {
         return;
     }
 
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
+    const { data, error} = await supabaseClient
             .from("reservations")
-            .select(
-                "id,user_id,activity,date,time,is_started,created_at"
-            )
-            .order(
-                "created_at",
-                {
-                    ascending: false
-                }
-            )
+            .select("id,user_id,activity,date,time,is_started,created_at")
+            .order("created_at", {ascending: false})
             .limit(5);
-
 
     if (error) {
 
-        console.error(
-            "Erreur de récupération récente :",
-            error
-        );
-
-
+        console.error("Erreur de récupération récente :",error);
         container.innerHTML = `
-            <p
-                class="text-center text-red-500 py-5">
-
+            <p class="text-center text-red-500 py-5">
                 Impossible de récupérer
                 les réservations.
-
             </p>
         `;
 
@@ -1432,55 +1196,31 @@ async function loadRecentReservations() {
 
 
     if (!data || data.length === 0) {
-
         container.innerHTML = `
-            <p
-                class="text-center text-slate-400 py-8">
-
+            <p class="text-center text-slate-400 py-8">
                 Aucune réservation pour le moment.
-
             </p>
         `;
-
         return;
     }
 
 
-    container.innerHTML =
-        data.map(
+    container.innerHTML = data.map(
             reservation => `
-
-                <div
-                    class="flex flex-col sm:flex-row
-                    sm:items-center
-                    justify-between gap-3
-                    py-4 border-b
-                    border-slate-100
-                    last:border-0">
-
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-4 border-b border-slate-100
+                          last:border-0">
                     <div>
-
                         <p class="font-bold">
-
                             ${escapeHtml(
                                 reservation.activity
                             )}
-
                         </p>
 
-
-                        <p
-                            class="text-sm text-slate-500
-                            mt-1">
-
+                        <p class="text-sm text-slate-500  mt-1">
                             ${escapeHtml(
-                                formatDate(
-                                    reservation.date
-                                )
+                                formatDate(reservation.date)
                             )}
-
                             •
-
                             ${escapeHtml(
                                 String(
                                     reservation.time || ""
@@ -1488,90 +1228,52 @@ async function loadRecentReservations() {
                             )}
 
                         </p>
-
                     </div>
 
-
-                    ${
-                        reservation.is_started
+                    ${ reservation.is_started
 
                         ? `
-                            <span
-                                class="self-start
-                                sm:self-auto
-                                px-3 py-1
-                                rounded-full
-                                bg-green-100
-                                text-green-700
-                                text-xs font-bold">
+                            <span class="self-start sm:self-auto px-3 py-1 rounded-full
+                                bg-green-100 text-green-700 text-xs font-bold">
 
                                 En cours
 
                             </span>
                         `
-
                         : `
-
-                            <span
-                                class="self-start
-                                sm:self-auto
-                                px-3 py-1
-                                rounded-full
-                                bg-slate-100
-                                text-slate-600
-                                text-xs font-bold">
+                            <span class="self-start sm:self-auto px-3 py-1 rounded-full
+                                bg-slate-100 text-slate-600 text-xs font-bold">
 
                                 Réservée
-
                             </span>
                         `
                     }
 
                 </div>
-
             `
         ).join("");
 }
-
-
-/* =========================================================
-   RECHERCHE RÉSERVATIONS
-========================================================= */
+   //RECHERCHE RÉSERVATIONS
 
 function searchReservations(value) {
 
-    const search =
-        value.trim().toLowerCase();
-
-
+    const search = value.trim().toLowerCase();
     if (!search) {
-
-        renderReservations(
-            allReservations
-        );
-
+        renderReservations(allReservations);
         return;
     }
 
 
-    const filtered =
-        allReservations.filter(
-            reservation =>
-                String(
-                    reservation.activity || ""
-                )
+    const filtered = allReservations.filter(
+            reservation => String(reservation.activity || "")
                     .toLowerCase()
                     .includes(search)
         );
 
-
     renderReservations(filtered);
 }
 
-
-/* =========================================================
-   RECHERCHE MEMBRES
-========================================================= */
+   //RECHERCHE MEMBRES
 
 function searchUsers(value) {
 
@@ -1587,13 +1289,9 @@ function searchUsers(value) {
     renderUsers(filtered);
 }
 
-
-/* =========================================================
-   SIDEBAR MOBILE
-========================================================= */
+  // SIDEBAR MOBILE
 
 function openMobileSidebar() {
-
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("sidebarOverlay");
     sidebar?.classList.remove("-translate-x-full");
@@ -1610,10 +1308,7 @@ function closeMobileSidebar() {
     }
 }
 
-
-/* =========================================================
-   DÉCONNEXION
-========================================================= */
+  //DÉCONNEXION
 
 async function logoutAdmin() {
     const { error } = await supabaseClient.auth.signOut();
@@ -1626,19 +1321,13 @@ async function logoutAdmin() {
     window.location.href ="../index.html";
 }
 
+  // INITIALISATION
 
-/* =========================================================
-   INITIALISATION
-========================================================= */
-
-document.addEventListener(
-    "DOMContentLoaded",async () => {const isAdmin = await checkAdminAccess();
-
+document.addEventListener("DOMContentLoaded",async () => {const isAdmin = await checkAdminAccess();
         if (!isAdmin) {
             return;
         }
         /* MENU */
-
         document.querySelectorAll(".admin-menu").forEach(button => {
                 button.addEventListener("click",() => {
                         showSection(button.dataset.section);
@@ -1646,18 +1335,12 @@ document.addEventListener(
                 );
             });
 
-
         /* SIDEBAR */
-
         document.getElementById("menuButton").addEventListener("click",openMobileSidebar);
         document.getElementById("sidebarOverlay").addEventListener("click",closeMobileSidebar);
-
         /* LOGOUT */
-
         document.getElementById("logoutButton" ).addEventListener( "click",logoutAdmin);
-
         /* ACTIVITÉ */
-
         document.getElementById("addActivityButton" ).addEventListener("click", openActivities);
         document.getElementById( "closeActivityModal").addEventListener("click",closeActivityModal);
         document.getElementById("cancelActivityButton").addEventListener("click",closeActivityModal);
@@ -1689,19 +1372,15 @@ document.addEventListener(
         await loadRecentReservations();
         await updateDashboardStats();
 
-
         /* SURVEILLANCE SESSION */
 
         supabaseClient.auth.onAuthStateChange(
             async (_event, session) => {
-
                 if (!session?.user) {
-
                     window.location.href ="../index.html";
                 }
             }
         );
-
     }
 );
 
