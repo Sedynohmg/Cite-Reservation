@@ -673,1647 +673,653 @@ async function loadTodayProgram() {
     } catch (error) {
         console.error("Erreur chargement programme:", error);
         programmContainer.innerHTML = `
-            <p
-                class="text-sm text-slate-500 text-center py-4"
-            >
+            <p class="text-sm text-slate-500 text-center py-4">
                 Impossible de charger le programme.
             </p>
-
         `;
-
     }
-
 }
 
+   //OUVRIR RESERVATION
 
-/* =========================================================
-   OUVRIR RESERVATION
-========================================================= */
-
-async function openReservation(
-    activity = ""
-) {
-
+async function openReservation(activity = "") {
     if (!currentUser) {
-
         showAuth();
-
         return;
     }
-
-    const modal =
-        document.getElementById(
-            "reservationModal"
-        );
-
+    const modal = document.getElementById("reservationModal");
     if (!modal) {
         return;
     }
 
-    const activityInput =
-        document.getElementById(
-            "activity"
-        );
-
-    if (
-        activityInput &&
-        activity
-    ) {
-
-        activityInput.value =
-            activity;
-
+    const activityInput = document.getElementById("activity");
+    if (activityInput &&activity) {
+        activityInput.value = activity;
     }
 
-    selectedDate =
-        null;
-
-    selectedTime =
-        null;
-
-    calendarReservations =
-        [];
-
-    const dateInput =
-        document.getElementById(
-            "date"
-        );
-
-    const timeInput =
-        document.getElementById(
-            "time"
-        );
-
+    selectedDate = null;
+    selectedTime = null;
+    calendarReservations = [];
+    const dateInput = document.getElementById("date");
+    const timeInput = document.getElementById("time");
     if (dateInput) {
-        dateInput.value =
-            "";
-    }
-
+        dateInput.value = "";}
     if (timeInput) {
-        timeInput.value =
-            "";
+        timeInput.value = "";
     }
 
     resetSubmitButton();
-
-    // Affichage immédiat
-    modal.classList.remove(
-        "hidden"
-    );
-
-    modal.classList.add(
-        "flex"
-    );
-
-    document.body.classList.add(
-        "overflow-hidden"
-    );
-
-    // Affichage immédiat du calendrier
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    document.body.classList.add("overflow-hidden");
     renderCalendar();
-
     renderTimeSlots();
-
-    // Chargement ensuite
     await loadCalendarReservations();
 
 }
 
-
-/* =========================================================
-   FERMER RESERVATION
-========================================================= */
+   //FERMER RESERVATION
 
 function closeReservation() {
-
-    const modal =
-        document.getElementById(
-            "reservationModal"
-        );
-
+    const modal = document.getElementById("reservationModal");
     if (!modal) {
         return;
     }
-
-    modal.classList.add(
-        "hidden"
-    );
-
-    modal.classList.remove(
-        "flex"
-    );
-
-    document.body.classList.remove(
-        "overflow-hidden"
-    );
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    document.body.classList.remove("overflow-hidden");
 
 }
 
-
-/* =========================================================
-   CALENDRIER - INITIALISATION
-========================================================= */
+  // CALENDRIER - INITIALISATION
 
 function initCalendarButtons() {
+    const previousButton = document.getElementById("previousMonthButton");
 
-    const previousButton =
-        document.getElementById(
-            "previousMonthButton"
-        );
-
-    const nextButton =
-        document.getElementById(
-            "nextMonthButton"
-        );
-
+    const nextButton = document.getElementById("nextMonthButton");
     if (previousButton) {
-
-        previousButton.addEventListener(
-            "click",
-            previousMonth
-        );
-
+        previousButton.addEventListener("click", previousMonth);
     }
 
     if (nextButton) {
-
-        nextButton.addEventListener(
-            "click",
-            nextMonth
-        );
-
+        nextButton.addEventListener("click", nextMonth);
     }
 
 }
 
-
-/* =========================================================
-   MOIS PRECEDENT
-========================================================= */
+   //MOIS PRECEDENT
 
 async function previousMonth() {
-
     currentMonth--;
-
     if (currentMonth < 0) {
-
-        currentMonth =
-            11;
-
+        currentMonth = 11;
         currentYear--;
-
     }
 
-    calendarReservations =
-        [];
-
-    // Affichage immédiat
+    calendarReservations = [];
     renderCalendar();
-
-    // Charger le nouveau mois
     await loadCalendarReservations();
 
 }
 
-
-/* =========================================================
-   MOIS SUIVANT
-========================================================= */
-
+   //MOIS SUIVANT
 async function nextMonth() {
-
     currentMonth++;
-
     if (currentMonth > 11) {
-
-        currentMonth =
-            0;
-
+        currentMonth = 0;
         currentYear++;
 
     }
 
-    calendarReservations =
-        [];
-
-    // Affichage immédiat
+    calendarReservations = [];
     renderCalendar();
-
-    // Charger le nouveau mois
     await loadCalendarReservations();
 
 }
 
+   //RESERVATIONS D'UN MOIS
 
-/* =========================================================
-   RESERVATIONS D'UN MOIS
-========================================================= */
-
-async function getReservationsForActivityMonth(
-    activity
-) {
-
+async function getReservationsForActivityMonth( activity) {
     if (!activity) {
         return [];
     }
 
-    const firstDate =
-        createDateString(
-            currentYear,
-            currentMonth,
-            1
-        );
-
-    const lastDay =
-        new Date(
-            currentYear,
-            currentMonth + 1,
-            0
-        ).getDate();
-
-    const lastDate =
-        createDateString(
-            currentYear,
-            currentMonth,
-            lastDay
-        );
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
+    const firstDate = createDateString( currentYear,currentMonth, 1);
+    const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const lastDate = createDateString(currentYear, currentMonth, lastDay);
+    const {data,error} = await supabaseClient
             .from("reservations")
-            .select(
-                "date, time, activity"
-            )
-            .eq(
-                "activity",
-                activity
-            )
-            .gte(
-                "date",
-                firstDate
-            )
-            .lte(
-                "date",
-                lastDate
-            );
-
+            .select("date, time, activity")
+            .eq("activity", activity)
+            .gte("date",firstDate)
+            .lte("date",lastDate);
     if (error) {
-
-        console.error(
-            "Erreur calendrier :",
-            error
-        );
-
+        console.error("Erreur calendrier :",error);
         return [];
     }
-
     return data || [];
-
 }
 
-
-/* =========================================================
-   CHARGER LES RESERVATIONS DU MOIS EN MEMOIRE
-========================================================= */
+   //CHARGER LES RESERVATIONS DU MOIS EN MEMOIRE
 
 async function loadCalendarReservations() {
-
-    const activity =
-        document.getElementById(
-            "activity"
-        )?.value || "";
-
+    const activity = document.getElementById("activity")?.value || "";
     if (!activity) {
-
-        calendarReservations =
-            [];
-
+        calendarReservations = [];
         renderCalendar();
-
         return;
     }
-
-    const reservations =
-        await getReservationsForActivityMonth(
-            activity
-        );
-
-    calendarReservations =
-        reservations || [];
-
-    // Actualiser le calendrier
+    const reservations = await getReservationsForActivityMonth(activity);
+    calendarReservations = reservations || [];
     renderCalendar();
 
-    // Actualiser les créneaux
     if (selectedDate) {
-
         renderTimeSlots();
-
     }
 
 }
 
-
-/* =========================================================
-   AFFICHER CALENDRIER
-========================================================= */
+  // AFFICHER CALENDRIER
 
 function renderCalendar() {
-
-    const calendar =
-        document.getElementById(
-            "calendar"
-        );
-
-    const title =
-        document.getElementById(
-            "calendarTitle"
-        );
-
+    const calendar = document.getElementById("calendar");
+    const title = document.getElementById("calendarTitle");
     if (!calendar || !title) {
         return;
     }
 
-    calendar.innerHTML =
-        "";
+    calendar.innerHTML = "";
+    title.textContent =`${monthNames[currentMonth]} ${currentYear}`;
 
-    title.textContent =
-        `${monthNames[currentMonth]} ${currentYear}`;
-
-    const firstDay =
-        new Date(
-            currentYear,
-            currentMonth,
-            1
-        );
-
-    const daysInMonth =
-        new Date(
-            currentYear,
-            currentMonth + 1,
-            0
-        ).getDate();
-
-    let startDay =
-        firstDay.getDay() - 1;
-
+    const firstDay = new Date( currentYear, currentMonth,1);
+    const daysInMonth = new Date(currentYear,currentMonth + 1,0).getDate();
+    let startDay = firstDay.getDay() - 1;
     if (startDay === -1) {
-
-        startDay =
-            6;
-
+        startDay = 6;
+    }
+    for (let i = 0;i < startDay; i++) {
+        const emptyCell = document.createElement("div");
+        emptyCell.className = "calendar-day min-h-12 border-b border-r border-slate-100";
+        calendar.appendChild(emptyCell);
     }
 
-    for (
-        let i = 0;
-        i < startDay;
-        i++
-    ) {
-
-        const emptyCell =
-            document.createElement(
-                "div"
-            );
-
-        emptyCell.className =
-            "calendar-day min-h-12 border-b border-r border-slate-100";
-
-        calendar.appendChild(
-            emptyCell
-        );
-
-    }
-
-    // Réservations déjà chargées
-    const reservations =
-        calendarReservations;
-
-    for (
-        let day = 1;
-        day <= daysInMonth;
-        day++
-    ) {
-
+    const reservations = calendarReservations;
+    for (let day = 1;day <= daysInMonth; day++) {
         const dateString =
-            createDateString(
-                currentYear,
-                currentMonth,
-                day
-            );
+            createDateString(currentYear,currentMonth,day);
+        const button = document.createElement("button");
+        button.type ="button";
+        button.className ="calendar-day relative min-h-12 border-b border-r border-slate-100 flex items-center justify-center font-semibold hover:bg-sky-100 transition";
+        button.textContent = day;
 
-        const button =
-            document.createElement(
-                "button"
-            );
-
-        button.type =
-            "button";
-
-        button.className =
-            "calendar-day relative min-h-12 border-b border-r border-slate-100 flex items-center justify-center font-semibold hover:bg-sky-100 transition";
-
-        button.textContent =
-            day;
-
-        if (
-            dateString ===
-            selectedDate
-        ) {
-
-            button.classList.add(
-                "bg-sky-600",
-                "text-white"
-            );
-
+        if ( dateString === selectedDate ) {
+            button.classList.add("bg-sky-600","text-white");
         }
 
-        const reservationsForDay =
-            reservations.filter(
-                reservation =>
-                    reservation.date ===
-                    dateString
-            );
-
-        if (
-            reservationsForDay.length >=
-            timeSlots.length
-        ) {
-
-            button.classList.add(
-                "bg-red-50",
-                "text-red-600"
-            );
-
-            button.title =
-                "Journée complète";
-
+        const reservationsForDay = reservations.filter(reservation =>reservation.date === dateString);
+        if (reservationsForDay.length >= timeSlots.length) {
+            button.classList.add("bg-red-50","text-red-600");
+            button.title ="Journée complète";
         }
 
-        if (
-            reservationsForDay.length > 0 &&
-            reservationsForDay.length <
-                timeSlots.length &&
-            dateString !== selectedDate
-        ) {
+        if (reservationsForDay.length > 0 && reservationsForDay.length < timeSlots.length && dateString !== selectedDate) {
 
-            const dot =
-                document.createElement(
-                    "span"
-                );
-
-            dot.className =
-                "absolute bottom-1 w-1.5 h-1.5 bg-red-500 rounded-full";
-
-            button.appendChild(
-                dot
-            );
-
+            const dot = document.createElement("span");
+            dot.className = "absolute bottom-1 w-1.5 h-1.5 bg-red-500 rounded-full";
+            button.appendChild(dot);
         }
 
-        button.addEventListener(
-            "click",
-            () =>
-                selectDate(
-                    dateString
-                )
-        );
-
-        calendar.appendChild(
-            button
-        );
-
+        button.addEventListener("click",() =>selectDate(dateString));
+        calendar.appendChild( button);
     }
 
 }
 
-
-/* =========================================================
-   CHANGER D'ACTIVITE
-========================================================= */
+  // CHANGER D'ACTIVITE
 
 async function updateAgenda() {
-
-    const activityInput =
-        document.getElementById(
-            "activity"
-        );
-
+    const activityInput = document.getElementById("activity");
     if (!activityInput) {
-
-        console.warn(
-            "Le champ #activity est introuvable."
-        );
-
+        console.warn("Le champ #activity est introuvable.");
         return;
     }
-
-    const activity =
-        activityInput.value.trim();
-
-    selectedDate =
-        null;
-
-    selectedTime =
-        null;
-
-    const dateInput =
-        document.getElementById(
-            "date"
-        );
-
-    const timeInput =
-        document.getElementById(
-            "time"
-        );
-
+    const activity = activityInput.value.trim();
+    selectedDate = null;
+    selectedTime =null;
+    const dateInput = document.getElementById("date");
+    const timeInput = document.getElementById("time");
     if (dateInput) {
-
-        dateInput.value =
-            "";
-
+        dateInput.value = "";
     }
 
     if (timeInput) {
-
-        timeInput.value =
-            "";
-
+         timeInput.value ="";
     }
 
     resetSubmitButton();
-
-    // Affichage immédiat
-    calendarReservations =
-        [];
-
+    calendarReservations = [];
     renderCalendar();
-
     renderTimeSlots();
-
-    // Chargement des données
     await loadCalendarReservations();
-
-    console.log(
-        "Activité sélectionnée :",
-        activity
-    );
-
+    console.log("Activité sélectionnée :",activity);
 }
 
+  // SELECTION DATE
 
-/* =========================================================
-   SELECTION DATE
-========================================================= */
-
-async function selectDate(
-    dateString
-) {
-
-    selectedDate =
-        dateString;
-
-    selectedTime =
-        null;
-
-    const dateInput =
-        document.getElementById(
-            "date"
-        );
-
-    const timeInput =
-        document.getElementById(
-            "time"
-        );
-
+async function selectDate(dateString) {
+    selectedDate =  dateString;
+    selectedTime = null;
+    const dateInput = document.getElementById("date");
+    const timeInput = document.getElementById("time");
     if (dateInput) {
-
-        dateInput.value =
-            dateString;
-
+        dateInput.value = dateString;
     }
 
     if (timeInput) {
-
-        timeInput.value =
-            "";
-
+        timeInput.value = "";
     }
 
     resetSubmitButton();
-
-    // Aucun appel Supabase
     renderCalendar();
-
     await renderTimeSlots();
 
 }
 
-
-/* =========================================================
-   AFFICHER CRENEAUX
-========================================================= */
+  // AFFICHER CRENEAUX
 
 async function renderTimeSlots() {
-
-    const container =
-        document.getElementById(
-            "timeSlots"
-        );
-
-    const selectedDateText =
-        document.getElementById(
-            "selectedDateText"
-        );
-
+    const container = document.getElementById("timeSlots");
+    const selectedDateText = document.getElementById("selectedDateText");
     if (!container) {
         return;
     }
-
-    container.innerHTML =
-        "";
-
+    container.innerHTML ="";
     if (!selectedDate) {
-
         if (selectedDateText) {
-
-            selectedDateText.textContent =
-                "Sélectionnez une date dans le calendrier.";
-
+            selectedDateText.textContent ="Sélectionnez une date dans le calendrier.";
         }
 
         container.innerHTML = `
-
-            <div
-                class="sm:col-span-2 p-5 rounded-xl bg-slate-50 text-center"
-            >
-
+            <div class="sm:col-span-2 p-5 rounded-xl bg-slate-50 text-center">
                 <div class="text-slate-400 mb-2">
-
-                    <i
-                        class="bi bi-calendar-day text-2xl"
-                    ></i>
-
+                    <i class="bi bi-calendar-day text-2xl"></i>
                 </div>
-
                 <p class="text-sm text-slate-400">
-
                     Sélectionnez une date pour voir les créneaux.
-
                 </p>
-
             </div>
-
         `;
-
         return;
     }
 
     if (selectedDateText) {
-
-        selectedDateText.textContent =
-            formatDate(
-                selectedDate
-            );
-
+        selectedDateText.textContent = formatDate(selectedDate);
     }
-
-    const activity =
-        document.getElementById(
-            "activity"
-        )?.value || "";
-
+    const activity = document.getElementById("activity")?.value || "";
     if (!activity) {
-
         container.innerHTML = `
-
-            <div
-                class="sm:col-span-2 p-5 rounded-xl bg-yellow-50 border border-yellow-200 text-center"
-            >
-
+            <div  class="sm:col-span-2 p-5 rounded-xl bg-yellow-50 border border-yellow-200 text-center">
                 <p class="text-sm text-yellow-700">
-
                     Sélectionnez une activité pour voir les disponibilités.
-
                 </p>
-
             </div>
-
         `;
-
         return;
     }
 
-    // IMPORTANT :
-    // Utiliser les réservations déjà chargées
-    // au lieu d'interroger Supabase à chaque clic.
-
-    const reservations =
-        calendarReservations.filter(
-            reservation =>
-                reservation.activity ===
-                    activity &&
-                reservation.date ===
-                    selectedDate
+    const reservations = calendarReservations.filter( reservation =>
+                        reservation.activity === activity && reservation.date === selectedDate
         );
 
-    const reservedTimes =
-        (reservations || [])
-            .map(
-                reservation =>
-                    String(
-                        reservation.time
-                    ).slice(0, 5)
-            );
-
+    const reservedTimes = (reservations || []).map(reservation => String(reservation.time).slice(0, 5));
     timeSlots.forEach(
         time => {
-
-            const existingReservation =
-                reservedTimes.includes(
-                    time
-                );
-
-            const button =
-                document.createElement(
-                    "button"
-                );
-
-            button.type =
-                "button";
-
+            const existingReservation = reservedTimes.includes(time);
+            const button = document.createElement("button");
+            button.type ="button";
             if (existingReservation) {
-
-                button.disabled =
-                    true;
-
-                button.className =
-                    "flex items-center justify-between p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 cursor-not-allowed";
-
+                button.disabled = true;
+                button.className = "flex items-center justify-between p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 cursor-not-allowed";
                 button.innerHTML = `
-
                     <span class="font-bold">
                         ${time}
                     </span>
-
-                    <span
-                        class="flex items-center gap-2 text-sm"
-                    >
-
-                        <span
-                            class="w-2 h-2 bg-red-500 rounded-full"
-                        ></span>
-
+                    <span class="flex items-center gap-2 text-sm">
+                        <span class="w-2 h-2 bg-red-500 rounded-full"></span>
                         Réservé
-
                     </span>
-
                 `;
 
             } else {
 
-                button.className =
-                    "time-slot flex items-center justify-between p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 hover:bg-green-500 hover:text-white transition";
-
-                if (
-                    selectedTime ===
-                    time
-                ) {
-
-                    button.classList.add(
-                        "bg-sky-600",
-                        "text-white",
-                        "border-sky-600"
-                    );
-
+                button.className = "time-slot flex items-center justify-between p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 hover:bg-green-500 hover:text-white transition";
+                if (selectedTime ===time) {
+                    button.classList.add("bg-sky-600","text-white","border-sky-600");
                 }
 
                 button.innerHTML = `
-
                     <span class="font-bold">
                         ${time}
                     </span>
-
-                    <span
-                        class="flex items-center gap-2 text-sm"
-                    >
-
-                        <span
-                            class="w-2 h-2 bg-green-500 rounded-full"
-                        ></span>
-
+                    <span class="flex items-center gap-2 text-sm">
+                        <span class="w-2 h-2 bg-green-500 rounded-full"></span>
                         Disponible
-
                     </span>
-
                 `;
 
-                button.addEventListener(
-                    "click",
-                    () =>
-                        selectTime(
-                            time
-                        )
+                button.addEventListener("click",() =>
+                        selectTime(time)
                 );
-
             }
-
-            container.appendChild(
-                button
-            );
-
+            container.appendChild(button);
         }
     );
 
 }
 
-
-/* =========================================================
-   SELECTION CRENEAU
-========================================================= */
+  //SELECTION CRENEAU
 
 function selectTime(time) {
-
-    selectedTime =
-        time;
-
-    const timeInput =
-        document.getElementById(
-            "time"
-        );
-
+    selectedTime = time;
+    const timeInput = document.getElementById("time");
     if (timeInput) {
-
-        timeInput.value =
-            time;
-
+        timeInput.value = time;
     }
 
-    const submitButton =
-        document.getElementById(
-            "submitReservation"
-        );
-
+    const submitButton = document.getElementById("submitReservation");
     if (!submitButton) {
         return;
     }
 
-    submitButton.disabled =
-        false;
-
-    submitButton.className =
-        "w-full bg-sky-600 hover:bg-sky-700 text-white py-3.5 rounded-xl font-bold transition";
-
-    submitButton.textContent =
-        `Réserver à ${time}`;
-
+    submitButton.disabled =false;
+    submitButton.className = "w-full bg-sky-600 hover:bg-sky-700 text-white py-3.5 rounded-xl font-bold transition";
+    submitButton.textContent =`Réserver à ${time}`;
     renderTimeSlots();
 
 }
 
-
-/* =========================================================
-   RESET BOUTON RESERVATION
-========================================================= */
+   //RESET BOUTON RESERVATION
 
 function resetSubmitButton() {
-
-    const submitButton =
-        document.getElementById(
-            "submitReservation"
-        );
-
+    const submitButton = document.getElementById("submitReservation");
     if (!submitButton) {
         return;
     }
-
-    submitButton.disabled =
-        true;
-
-    submitButton.className =
-        "w-full bg-slate-300 text-slate-500 py-3.5 rounded-xl font-bold cursor-not-allowed";
-
-    submitButton.textContent =
-        "Sélectionnez un créneau";
-
+    submitButton.disabled =true;
+    submitButton.className ="w-full bg-slate-300 text-slate-500 py-3.5 rounded-xl font-bold cursor-not-allowed";
+    submitButton.textContent = "Sélectionnez un créneau";
 }
 
+   //CREER RESERVATION
 
-/* =========================================================
-   CREER RESERVATION
-========================================================= */
-
-async function createReservation(
-    activity,
-    date,
-    time
-) {
-
+async function createReservation(activity,date,time) {
     if (!currentUser) {
-
         showAuth();
-
         return null;
     }
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
+    const {data, error} = await supabaseClient
             .from("reservations")
             .insert({
-
-                user_id:
-                    currentUser.id,
-
-                activity:
-                    activity,
-
-                date:
-                    date,
-
-                time:
-                    time
-
+                user_id:currentUser.id,
+                activity:activity,
+                date: date,
+                time:time
             })
             .select()
             .single();
 
     if (error) {
-
-        console.error(
-            "Erreur réservation :",
-            error
-        );
-
-        if (
-            error.code ===
-            "23505"
-        ) {
-
-            alert(
-                "Ce créneau vient d'être réservé par quelqu'un d'autre."
-            );
-
+        console.error("Erreur réservation :", error);
+        if (error.code === "23505") {
+            alert("Ce créneau vient d'être réservé par quelqu'un d'autre.");
         } else {
-
-            alert(
-                "Impossible d'enregistrer la réservation : " +
-                error.message
-            );
-
+            alert("Impossible d'enregistrer la réservation : " + error.message);
         }
-
         return null;
     }
 
     return data;
-
 }
 
+   //SOUMISSION RESERVATION
 
-/* =========================================================
-   SOUMISSION RESERVATION
-========================================================= */
-
-async function handleReservationSubmit(
-    event
-) {
-
+async function handleReservationSubmit(event) {
     event.preventDefault();
-
     if (!currentUser) {
-
         showAuth();
-
         return;
     }
 
-    const activity =
-        document.getElementById(
-            "activity"
-        )?.value.trim();
-
-    const date =
-        document.getElementById(
-            "date"
-        )?.value.trim();
-
-    const time =
-        document.getElementById(
-            "time"
-        )?.value.trim();
-
-    if (
-        !activity ||
-        !date ||
-        !time
-    ) {
-
-        alert(
-            "Veuillez sélectionner une activité, une date et un créneau."
-        );
-
+    const activity = document.getElementById("activity")?.value.trim();
+    const date = document.getElementById("date")?.value.trim();
+    const time = document.getElementById("time")?.value.trim();
+    if (!activity ||!date ||!time) {
+        alert("Veuillez sélectionner une activité, une date et un créneau.");
         return;
     }
-
     const reservation =
-        await createReservation(
-            activity,
-            date,
-            time
-        );
-
+        await createReservation(activity, date,time);
     if (!reservation) {
         return;
     }
-
-    alert(
-        "Votre réservation a été enregistrée avec succès !"
-    );
-
-    document
-        .getElementById(
-            "reservationForm"
-        )
-        ?.reset();
-
-    selectedDate =
-        null;
-
-    selectedTime =
-        null;
-
+    alert("Votre réservation a été enregistrée avec succès !");
+    document.getElementById("reservationForm")?.reset();
+    selectedDate = null;
+    selectedTime = null;
     resetSubmitButton();
-
     closeReservation();
 
 }
 
-
-/* =========================================================
-   VOS ACTIVITES
-========================================================= */
+  // VOS ACTIVITES
 
 async function getMyReservations() {
-
     if (!currentUser) {
         return [];
     }
 
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
+    const {data,error} = await supabaseClient
             .from("reservations")
-            .select(
-                "id,user_id, activity, date, time,validated,is_started, created_at"
-            )
-            .eq(
-                "user_id",
-                currentUser.id
-            )
-            .order(
-                "date",
-                {
-                    ascending: true
-                }
-            )
-            .order(
-                "time",
-                {
-                    ascending: true
-                }
-            );
-
+            .select("id,user_id, activity, date, time,validated,is_started, created_at")
+            .eq("user_id",currentUser.id)
+            .order("date", {ascending: true})
+            .order("time",{ascending: true});
     if (error) {
-
-        console.error(
-            "Erreur récupération activités :",
-            error
-        );
-
+        console.error("Erreur récupération activités :",error);
         return [];
     }
-
     return data || [];
-
 }
 
-
-/* =========================================================
-   OUVRIR VOS ACTIVITES
-========================================================= */
+   //OUVRIR VOS ACTIVITES
 
 async function openActivities() {
-
     if (!currentUser) {
-
         showAuth();
-
         return;
     }
 
-    const modal =
-        document.getElementById(
-            "activitiesModal"
-        );
-
+    const modal = document.getElementById("activitiesModal");
     if (!modal) {
         return;
     }
 
-    // Afficher immédiatement
-    modal.classList.remove(
-        "hidden"
-    );
-
-    modal.classList.add(
-        "flex"
-    );
-
-    document.body.classList.add(
-        "overflow-hidden"
-    );
-
-    // Utiliser le profil déjà en mémoire
-    const clientNameElement =
-        document.getElementById(
-            "currentClientName"
-        );
-
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    document.body.classList.add("overflow-hidden");
+    const clientNameElement = document.getElementById("currentClientName");
     if (clientNameElement) {
-
-        clientNameElement.textContent =
-            currentUserProfile?.name ||
-            document.getElementById(
-                "userDisplayName"
-            )?.textContent ||
-            currentUser.user_metadata?.name ||
-            currentUser.email ||
-            "";
-
+        clientNameElement.textContent = currentUserProfile?.name || document.getElementById("userDisplayName")?.textContent ||
+         currentUser.user_metadata?.name || currentUser.email || "";
     }
 
-    // Charger les activités après ouverture
     await renderActivities();
-
 }
 
-
-/* =========================================================
-   FERMER VOS ACTIVITES
-========================================================= */
+  // FERMER VOS ACTIVITES
 
 function closeActivities() {
 
-    const modal =
-        document.getElementById(
-            "activitiesModal"
-        );
-
+    const modal = document.getElementById("activitiesModal");
     if (!modal) {
         return;
     }
-
-    modal.classList.add(
-        "hidden"
-    );
-
-    modal.classList.remove(
-        "flex"
-    );
-
-    document.body.classList.remove(
-        "overflow-hidden"
-    );
-
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    document.body.classList.remove("overflow-hidden");
 }
 
-
-/* =========================================================
-   AFFICHER VOS ACTIVITES
-========================================================= */
+   //AFFICHER VOS ACTIVITES
 
 async function renderActivities() {
-
-    const activitiesList =
-        document.getElementById(
-            "activitiesList"
-        );
-
-    const noActivities =
-        document.getElementById(
-            "noActivities"
-        );
-
-    if (
-        !activitiesList ||
-        !noActivities
-    ) {
-
+    const activitiesList = document.getElementById("activitiesList");
+    const noActivities = document.getElementById("noActivities");
+    if (!activitiesList || !noActivities) {
         return;
-
     }
 
-    // Loader immédiat
     activitiesList.innerHTML = `
-
         <div class="text-center py-10">
-
-            <div
-                class="w-10 h-10 border-4 border-slate-200 border-t-sky-600 rounded-full animate-spin mx-auto"
-            ></div>
-
-            <p
-                class="text-sm text-slate-500 mt-3"
-            >
+            <div class="w-10 h-10 border-4 border-slate-200 border-t-sky-600 rounded-full animate-spin mx-auto"></div>
+            <p class="text-sm text-slate-500 mt-3">
                 Chargement de vos activités...
             </p>
-
         </div>
 
     `;
 
-    const reservations =
-        await getMyReservations();
-
-    activitiesList.innerHTML =
-        "";
-
-    if (
-        reservations.length ===
-        0
-    ) {
-
-        noActivities.classList.remove(
-            "hidden"
-        );
-
+    const reservations = await getMyReservations();
+    activitiesList.innerHTML = "";
+    if ( reservations.length === 0) {
+        noActivities.classList.remove("hidden");
         return;
     }
 
-    noActivities.classList.add(
-        "hidden"
-    );
-
+    noActivities.classList.add("hidden");
     reservations.forEach(
-        reservation => {
-
-            const isValidated =
-                reservation.validated ===
-                true;
-
-            const isStarted =
-                reservation.is_started ===
-                true;
-
-            let statusText =
-                "";
-
-            let statusClass =
-                "";
-
+        reservation => {const isValidated = reservation.validated === true;
+            const isStarted = reservation.is_started === true;
+            const isFinished = reservation.is_finished === true;
+            let statusText = "";
+            let statusClass = "";
             if (!isValidated) {
-
-                statusText =
-                    "En attente de validation";
-
-                statusClass =
-                    "bg-amber-100 text-amber-700";
-
+                statusText = "En attente de validation";
+                statusClass = "bg-amber-100 text-amber-700";
             } else if (!isStarted) {
-
-                statusText =
-                    "Réservation confirmée";
-
-                statusClass =
-                    "bg-emerald-500 text-black-500";
-
-            } else {
-
-                statusText =
-                    "En cours";
-
-                statusClass =
-                    "bg-green-100 text-green-700";
-
+                statusText = "Réservation confirmée";
+                statusClass = "bg-emerald-500 text-black-500";
+            } else if(isFinished){
+                statusText = "Terminée";
+                statusClass = "bg-red-200 text-white";
+            }
+            else {
+                statusText ="En cours";
+                statusClass = "bg-green-100 text-green-700";
             }
 
-            const item =
-                document.createElement(
-                    "div"
-                );
-
-            item.className =
-                "flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-2xl hover:border-sky-300 hover:bg-sky-50/50 transition";
-
+            const item = document.createElement("div");
+            item.className = "flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-2xl hover:border-sky-300 hover:bg-sky-50/50 transition";
             item.innerHTML = `
-
-                <div
-                    class="w-12 h-12 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center shrink-0"
-                >
-
-                    <i
-                        class="bi bi-calendar-check text-xl"
-                    ></i>
-
+                <div class="w-12 h-12 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
+                    <i class="bi bi-calendar-check text-xl"></i>
                 </div>
-
-                <div
-                    class="flex-1 min-w-0"
-                >
-
-                    <h3
-                        class="font-bold text-slate-800 truncate"
-                    >
-                        ${escapeHtml(
-                            reservation.activity
-                        )}
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-bold text-slate-800 truncate">
+                        ${escapeHtml(reservation.activity)}
                     </h3>
-
-                    <p
-                        class="text-sm text-slate-500 mt-1"
-                    >
-
-                        <i
-                            class="bi bi-calendar3 mr-1"
-                        ></i>
-
-                        ${escapeHtml(
-                            reservation.date
-                        )}
-
+                    <p class="text-sm text-slate-500 mt-1">
+                        <i class="bi bi-calendar3 mr-1"></i>
+                        ${escapeHtml(reservation.date)}
                         <span class="mx-1">
                             •
                         </span>
-
-                        <i
-                            class="bi bi-clock mr-1"
-                        ></i>
-
-                        ${escapeHtml(
-                            String(
-                                reservation.time ||
-                                ""
-                            ).slice(0, 5)
-                        )}
-
+                        <i class="bi bi-clock mr-1"></i>
+                        ${escapeHtml( String(reservation.time ||"").slice(0, 5))}
                     </p>
-
                 </div>
-
-                <span
-                    class="activity-status shrink-0 text-xs font-bold px-3 py-1.5 rounded-full ${statusClass}"
-                >
+                <span class="activity-status shrink-0 text-xs font-bold px-3 py-1.5 rounded-full ${statusClass}">
                     ${statusText}
                 </span>
-
             `;
-
-            activitiesList.appendChild(
-                item
-            );
-
+            activitiesList.appendChild(item);
         }
     );
-
 }
 
+   //TOUCHE ECHAP
 
-/* =========================================================
-   TOUCHE ECHAP
-========================================================= */
-
-document.addEventListener(
-    "keydown",
-    event => {
-
-        if (
-            event.key ===
-            "Escape"
-        ) {
-
+document.addEventListener("keydown", event => {
+        if (event.key ==="Escape") {
             closeReservation();
-
             closeActivities();
-
         }
-
     }
 );
 
+  // INITIALISATION
 
-/* =========================================================
-   INITIALISATION
-========================================================= */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    async () => {
-
+document.addEventListener("DOMContentLoaded",async () => {
         loadTodayProgram();
-
         initHeroSlider();
-
         initMobileMenu();
-
         initCalendarButtons();
-
-
-        /* ==============================================
-           INSCRIPTION
-        ============================================== */
-
+          // INSCRIPTION
         if (registerForm) {
-
-            registerForm.addEventListener(
-                "submit",
-                registerUser
-            );
-
+            registerForm.addEventListener("submit",registerUser);
         }
 
-
-        /* ==============================================
-           CONNEXION
-        ============================================== */
+           //CONNEXION
 
         if (loginForm) {
-
-            loginForm.addEventListener(
-                "submit",
-                loginUser
-            );
-
+            loginForm.addEventListener("submit",loginUser);
         }
 
-
-        /* ==============================================
-           CHANGEMENT AUTH
-        ============================================== */
+           //CHANGEMENT AUTH
 
         if (switchAuth) {
-
-            switchAuth.addEventListener(
-                "click",
-                () => {
-
-                    const registerVisible =
-                        !registerForm.classList.contains(
-                            "hidden"
-                        );
-
-                    if (
-                        registerVisible
-                    ) {
-
+            switchAuth.addEventListener("click",() => {
+                    const registerVisible =!registerForm.classList.contains("hidden");
+                    if (registerVisible) {
                         showLoginMode();
-
                     } else {
-
                         showRegisterMode();
-
                     }
-
                 }
             );
-
         }
 
+           //MOT DE PASSE OUBLIE
 
-        /* ==============================================
-           MOT DE PASSE OUBLIE
-        ============================================== */
-
-        if (
-            forgotPasswordButton
-        ) {
-
-            forgotPasswordButton.addEventListener(
-                "click",
-                resetPassword
-            );
-
+        if (forgotPasswordButton) {
+            forgotPasswordButton.addEventListener("click", resetPassword);
         }
-
-
-        /* ==============================================
-           DECONNEXION DESKTOP
-        ============================================== */
-
-        document
-            .getElementById(
-                "logoutButton"
-            )
-            ?.addEventListener(
-                "click",
-                logoutUser
-            );
-
-
-        /* ==============================================
-           DECONNEXION MOBILE
-        ============================================== */
-
-        document
-            .getElementById(
-                "mobileLogoutButton"
-            )
-            ?.addEventListener(
-                "click",
-                logoutUser
-            );
-
-
-        /* ==============================================
-           RESERVATION
-        ============================================== */
-
-        document
-            .getElementById(
-                "reservationForm"
-            )
-            ?.addEventListener(
-                "submit",
-                handleReservationSubmit
-            );
-
-
-        /* ==============================================
-           SURVEILLER AUTH
-        ============================================== */
-
+           //DECONNEXION DESKTOP
+        document.getElementById("logoutButton")?.addEventListener("click", logoutUser);
+          // DECONNEXION MOBILE
+        document.getElementById("mobileLogoutButton")?.addEventListener("click",logoutUser);
+           //RESERVATION
+        document.getElementById("reservationForm")?.addEventListener("submit",handleReservationSubmit);
+           //SURVEILLER AUTH
         supabaseClient.auth.onAuthStateChange(
-            async (
-                _event,
-                session
-            ) => {
-
+            async (_event,session) => {
                 if (session?.user) {
-
-                    currentUser =
-                        session.user;
-
-                    const displayName =
-                        document.getElementById(
-                            "userDisplayName"
-                        );
-
-                    const profile =
-                        await getMyProfile();
-
+                    currentUser = session.user;
+                    const displayName = document.getElementById("userDisplayName");
+                    const profile = await getMyProfile();
                     if (displayName) {
-
-                        displayName.textContent =
-                            profile?.name ||
-                            currentUser
-                                .user_metadata
-                                ?.name ||
-                            currentUser.email ||
-                            "";
-
+                        displayName.textContent = profile?.name || currentUser.user_metadata?.name || currentUser.email || "";
                     }
-
                     hideAuth();
-
                 } else {
-
-                    currentUser =
-                        null;
-
-                    currentUserProfile =
-                        null;
-
-                    currentUserProfilePromise =
-                        null;
-
-                    calendarReservations =
-                        [];
-
+                    currentUser = null;
+                    currentUserProfile = null;
+                    currentUserProfilePromise = null;
+                    calendarReservations =[];
                     showAuth();
-
                 }
-
             }
         );
-
-
-        /* ==============================================
-           SESSION + ACTIVITES EN PARALLELE
-        ============================================== */
-
-        await Promise.all([
-
-            loadPublicActivities(),
-
-            loadCurrentUser()
-
-        ]);
-
+           //SESSION + ACTIVITES EN PARALLELE
+        await Promise.all([loadPublicActivities(), loadCurrentUser()]);
     }
 );
